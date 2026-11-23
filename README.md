@@ -20,8 +20,8 @@ Nach der Installation lädt die App nichts mehr aus dem Internet und darf techni
 ## Auf dem iPhone oder iPad installieren
 
 1. Die Adresse der App in **Safari** öffnen.
-2. Unten auf das Teilen-Symbol tippen (Quadrat mit Pfeil nach oben).
-3. **Zum Home-Bildschirm** wählen und bestätigen.
+2. Auf das Teilen-Symbol tippen (Quadrat mit Pfeil nach oben, eventuell hinter „…“).
+3. In der Liste ganz unten auf **Mehr** tippen, dann **Zum Home-Bildschirm** wählen und bestätigen. Tipp: Über „Aktionen bearbeiten“ lässt sich der Eintrag dauerhaft nach oben holen.
 4. Die App ab jetzt über das Symbol „Munition“ starten. Sie läuft dann auch im Flugmodus.
 
 Wichtig: Immer über das Symbol auf dem Home-Bildschirm öffnen, nicht über Safari. Safari und die installierte App haben getrennte Speicher.
