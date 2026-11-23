@@ -1,7 +1,7 @@
 // Service Worker: hält alle App-Dateien auf dem Gerät, damit die App offline startet.
 // Er lädt ausschließlich Dateien der App selbst, nie etwas von fremden Servern.
-// Bei jeder Änderung an App-Dateien VERSION erhöhen.
-const VERSION = 'ammo-v5';
+// Bei jeder Änderung an App-Dateien VERSION erhöhen (und js/version.js).
+const VERSION = 'ammo-v6';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/version.js', './js/store.js', './js/db.js', './js/model.js', './js/ui.js', './js/anim.js',
@@ -11,7 +11,10 @@ const FILES = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // cache: 'reload' umgeht den Browser-Zwischenspeicher, sonst landen alte Dateien in der neuen Version
+  e.waitUntil(caches.open(VERSION)
+    .then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: 'reload' }))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {
@@ -29,7 +32,7 @@ self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.open(VERSION).then(async (cache) => {
       const hit = await cache.match(e.request, { ignoreSearch: true });
-      const net = fetch(e.request).then((res) => {
+      const net = fetch(url.href, { cache: 'no-cache' }).then((res) => {
         if (res.ok) cache.put(e.request, res.clone());
         return res;
       }).catch(() => hit);
