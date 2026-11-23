@@ -4,6 +4,7 @@ import { esc, fmt, dateDE, today, nowLocal, sheet, confirmSheet, toast } from '.
 import { validateBackup } from '../model.js';
 import { FAMILY_LABELS, guessDims } from '../calibers.js';
 import { cartridgeSVG } from '../cartridge-svg.js';
+import { APP_VERSION } from '../version.js';
 
 export function render() {
   const st = S.state.settings;
@@ -72,7 +73,7 @@ export function render() {
   <section class="set">
     <button class="btn-danger" data-action="wipe">Alle Daten löschen</button>
   </section>
-  <p class="version muted">Ammo Tracker, Version 1.0</p>`;
+  <p class="version muted">Ammo Tracker, Version ${APP_VERSION.number} vom ${APP_VERSION.date}</p>`;
 }
 
 // ---- Sicherung -----------------------------------------------------------
