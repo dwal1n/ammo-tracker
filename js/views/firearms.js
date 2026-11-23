@@ -32,7 +32,7 @@ async function edit(f) {
     title: isNew ? 'Neue Waffe' : f.name,
     fields: [
       { name: 'name', label: 'Bezeichnung', value: f?.name, required: true, placeholder: 'z. B. Glock 17, CZ Shadow 2' },
-      { name: 'caliberId', label: 'Kaliber', type: 'select', options: S.caliberOptions(), value: f?.caliberId || S.state.settings.lastCaliber || 'c-9luger', required: true },
+      { name: 'caliberId', label: 'Kaliber', type: 'select', options: S.caliberOptions(f?.caliberId), value: f?.caliberId || S.defaultCaliber(), required: true },
       { name: 'startCount', label: 'Schuss vor Nutzung der App', type: 'number', value: f?.startCount || '', placeholder: '0', hint: 'Bisher mit dieser Waffe verschossen, falls bekannt.' },
       { name: 'serviceInterval', label: 'Wartung alle … Schuss', type: 'number', value: f?.serviceInterval || '', placeholder: 'leer = keine Erinnerung' },
       { name: 'note', label: 'Notiz', type: 'textarea', value: f?.note },

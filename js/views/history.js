@@ -1,6 +1,7 @@
 // Verlauf: Statistik und alle Trainings, Einkäufe, Korrekturen
 import * as S from '../store.js';
-import { esc, fmt, eur, dateDE, timeDE, monthShort, sheet, confirmSheet, toast } from '../ui.js';
+import { esc, fmt, eur, dateDE, timeDE, monthShort, sheet, confirmSheet, toast, uniqueList } from '../ui.js';
+import { DEALERS } from '../calibers.js';
 import { monthlyStats, sessionSummary } from '../model.js';
 
 function chart(rows) {
@@ -107,7 +108,8 @@ async function openPurchase(p) {
     fields: [
       { name: 'qty', label: 'Menge (Patronen)', type: 'number', value: p.qty, required: true },
       { name: 'totalPrice', label: 'Gesamtpreis (€)', type: 'number', inputmode: 'decimal', value: p.totalPrice != null ? String(p.totalPrice).replace('.', ',') : '' },
-      { name: 'dealer', label: 'Händler', value: p.dealer },
+      { name: 'dealer', label: 'Händler', value: p.dealer,
+        suggestions: uniqueList(S.state.purchases.map((x) => x.dealer).filter((d) => d !== 'Anfangsbestand'), DEALERS) },
       { name: 'date', label: 'Datum', type: 'date', value: p.date, required: true },
     ],
     extra: [{ label: 'Einkauf löschen', action: 'del', danger: true }],

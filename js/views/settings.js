@@ -14,7 +14,17 @@ export function render() {
   const custom = S.state.calibers.filter((c) => c.custom);
   const counts = `${fmt(S.state.loads.length)} Sorten, ${fmt(S.state.purchases.length)} Einkäufe, ${fmt(S.state.sessions.filter((s) => s.status === 'done').length)} Trainings, ${fmt(S.state.firearms.length)} Waffen`;
 
+  const mine = (st.myCalibers || []).map((id) => S.caliber(id)).filter(Boolean);
+
   return `<header class="page-head"><h1 class="label">Mehr</h1></header>
+  <section class="set">
+    <h2 class="sub-head">Meine Kaliber</h2>
+    ${mine.length
+      ? `<div class="my-cals">${mine.map((c) => `<span class="my-cal">${S.cart(c, { height: 46 })}<span>${esc(c.name)}</span></span>`).join('')}</div>
+         <p class="muted">Nur diese Kaliber erscheinen in den Auswahllisten.</p>`
+      : '<p class="muted">Wähle die Kaliber aus, die du schießt. Dann erscheinen nur diese in den Auswahllisten, statt aller 24.</p>'}
+    <button class="btn-secondary" data-action="pickCalibers">${mine.length ? 'Auswahl ändern' : 'Kaliber auswählen'}</button>
+  </section>
   <section class="set">
     <h2 class="sub-head">Patronenbilder</h2>
     <div class="style-pick">${styleBtn('real', 'Realistisch')}${styleBtn('line', 'Technische Zeichnung')}</div>
@@ -156,7 +166,27 @@ async function editCaliber(c) {
   S.render();
 }
 
+async function pickCalibers() {
+  const order = Object.keys(FAMILY_LABELS);
+  const used = new Set([...S.state.loads.map((l) => l.caliberId), ...S.state.firearms.map((f) => f.caliberId)]);
+  const options = S.state.calibers.slice()
+    .sort((a, b) => order.indexOf(a.family) - order.indexOf(b.family) || a.name.localeCompare(b.name, 'de'))
+    .map((c) => ({ value: c.id, label: c.name, group: c.custom ? 'Eigene Kaliber' : FAMILY_LABELS[c.family] }));
+  const current = S.state.settings.myCalibers?.length ? S.state.settings.myCalibers : [...used];
+  const r = await sheet({
+    title: 'Meine Kaliber',
+    intro: '<p class="sheet-text">Tipp alle Kaliber an, die du schießt. Kaliber, die schon zu einer Sorte oder Waffe gehören, bleiben immer auswählbar.</p>',
+    fields: [{ name: 'cals', label: 'Kaliber', type: 'checks', options, value: current }],
+    submit: 'Fertig',
+  });
+  if (!r) return;
+  await S.setSetting('myCalibers', r.values.cals);
+  toast(r.values.cals.length ? `${r.values.cals.length} Kaliber ausgewählt` : 'Alle Kaliber werden angezeigt');
+  S.render();
+}
+
 export const actions = {
+  pickCalibers,
   setStyle: async (el) => { await S.setSetting('cartridgeStyle', el.dataset.v); S.render(); },
   setTheme: async (el) => { await S.setSetting('theme', el.dataset.v); S.render(); },
   exportData,

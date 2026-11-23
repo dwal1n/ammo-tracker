@@ -1,8 +1,8 @@
 // Bestand: Patronenparade, Kaliber mit Sorten, Einkauf, Korrektur, Sorten verwalten
 import * as S from '../store.js';
-import { esc, fmt, eur, eurShot, today, dateDE, sheet, confirmSheet, toast, ICONS } from '../ui.js';
+import { esc, fmt, eur, eurShot, today, dateDE, sheet, confirmSheet, toast, ICONS, uniqueList } from '../ui.js';
 import { isLow, caliberTotals } from '../model.js';
-import { BULLET_LABELS } from '../calibers.js';
+import { BULLET_LABELS, MAKERS, DEALERS } from '../calibers.js';
 import { countUp, blink, flash, paradeIntro } from '../anim.js';
 
 const BACKUP_DAYS = 30;
@@ -19,6 +19,7 @@ export function render() {
       <h2 class="label">Noch keine Munition erfasst</h2>
       <p>Lege deine erste Sorte an, zum Beispiel „Geco FMJ 124 gr“ in 9 mm Luger. Den aktuellen Bestand kannst du gleich mit eintragen.</p>
       <button class="btn-primary" data-action="newLoad">Munitionssorte anlegen</button>
+      ${S.state.settings.myCalibers?.length ? '' : '<button class="btn-secondary" data-action="goCalibers">Zuerst meine Kaliber auswählen</button>'}
     </div>`;
   }
 
@@ -108,9 +109,11 @@ const CASE_OPTS = [
 
 function loadFields(l = {}, isNew = false) {
   const f = [
-    { name: 'caliberId', label: 'Kaliber', type: 'select', options: S.caliberOptions(), value: l.caliberId || S.state.settings.lastCaliber || 'c-9luger', required: true },
-    { name: 'maker', label: 'Hersteller', value: l.maker, placeholder: 'z. B. Geco, S&B, RWS' },
-    { name: 'name', label: 'Bezeichnung', value: l.name, placeholder: 'z. B. FMJ, Target, Trap' },
+    { name: 'caliberId', label: 'Kaliber', type: 'select', options: S.caliberOptions(l.caliberId), value: l.caliberId || S.defaultCaliber(), required: true },
+    { name: 'maker', label: 'Hersteller', value: l.maker, placeholder: 'Name eintippen oder antippen',
+      suggestions: uniqueList(S.state.loads.map((x) => x.maker), MAKERS) },
+    { name: 'name', label: 'Bezeichnung', value: l.name, placeholder: 'z. B. FMJ, Target, Trap',
+      suggestions: uniqueList(S.state.loads.map((x) => x.name), ['FMJ', 'JHP', 'LRN', 'Wadcutter', 'Target', 'Match', 'Trap', 'Skeet', 'Sport']) },
     { name: 'grain', label: 'Geschossgewicht (grain)', type: 'number', inputmode: 'decimal', value: l.grain ?? '', placeholder: 'optional' },
     { name: 'bulletType', label: 'Geschossform für das Bild', type: 'select', options: BULLET_OPTS, value: l.bulletType || '' },
     { name: 'caseColor', label: 'Hülse für das Bild', type: 'select', options: CASE_OPTS, value: l.caseColor || '' },
@@ -180,7 +183,8 @@ async function purchase(l) {
     fields: [
       { name: 'qty', label: 'Menge (Patronen)', type: 'number', required: true, autofocus: true },
       { name: 'totalPrice', label: 'Gesamtpreis (€)', type: 'number', inputmode: 'decimal', placeholder: 'optional' },
-      { name: 'dealer', label: 'Händler', value: S.state.settings.lastDealer || '', placeholder: 'optional' },
+      { name: 'dealer', label: 'Händler', value: S.state.settings.lastDealer || '', placeholder: 'optional',
+        suggestions: uniqueList(S.state.purchases.map((x) => x.dealer).filter((d) => d !== 'Anfangsbestand'), DEALERS) },
       { name: 'date', label: 'Datum', type: 'date', value: today(), required: true },
     ],
     submit: 'Hinzufügen',
@@ -250,6 +254,7 @@ export const actions = {
   openLoad: (el) => openLoad(S.load(el.dataset.id)),
   scrollTo: (el) => document.getElementById(`cal-${el.dataset.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
   goBackup: () => { S.state.tab = 'more'; S.render(); },
+  goCalibers: () => { S.state.tab = 'more'; S.render(); },
 };
 
 export { editLoad };

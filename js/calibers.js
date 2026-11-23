@@ -69,6 +69,17 @@ export const DEFAULT_CALIBERS = [
     dims: { rim: 19.3, base: 17.5, mouth: 17.5, head: 12, caseLen: 63, oal: 63 } },
 ];
 
+// Vorschläge für Freitextfelder. Eigene Einträge kommen automatisch dazu.
+export const MAKERS = [
+  'Geco', 'RWS', 'Sellier & Bellot', 'PPU', 'Fiocchi', 'Magtech', 'MEN', 'Federal', 'Hornady', 'Lapua',
+  'Norma', 'Sako', 'Eley', 'SK', 'CCI', 'Winchester', 'Remington', 'Blaser', 'Speer', 'Barnes',
+  'Igman', 'Wolf', 'Barnaul', 'Rottweil', 'Gamebore', 'Baschieri & Pellagri', 'Rio', 'Saga',
+];
+export const DEALERS = [
+  'Frankonia', 'Kettner', 'Alljagd', 'Waffen Schumacher', 'Waffen Ostermann', 'Helmut Hofmann',
+  'Büchsenmacher vor Ort', 'Verein',
+];
+
 export const FAMILY_LABELS = {
   pistol: 'Kurzwaffe',
   revolver: 'Revolver',

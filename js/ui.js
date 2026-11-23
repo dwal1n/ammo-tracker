@@ -55,6 +55,19 @@ function fieldHTML(fd) {
       input = `<div class="segmented" role="radiogroup">${fd.options.map((o) =>
         `<label><input type="radio" name="${fd.name}" value="${esc(o.value)}"${String(o.value) === String(v) ? ' checked' : ''}><span>${esc(o.label)}</span></label>`).join('')}</div>`;
       break;
+    case 'checks': {
+      // Mehrfachauswahl als antippbare Kacheln, nach Gruppen
+      const sel = new Set(v || []);
+      const groups = new Map();
+      for (const o of fd.options) {
+        const g = o.group || '';
+        if (!groups.has(g)) groups.set(g, []);
+        groups.get(g).push(o);
+      }
+      input = [...groups].map(([g, os]) => `${g ? `<div class="checks-head">${esc(g)}</div>` : ''}<div class="checks">${os.map((o) =>
+        `<label class="check"><input type="checkbox" name="${fd.name}" value="${esc(o.value)}"${sel.has(o.value) ? ' checked' : ''}><span>${esc(o.label)}</span></label>`).join('')}</div>`).join('');
+      break;
+    }
     case 'textarea':
       input = `<textarea id="${id}" name="${fd.name}" rows="3" placeholder="${esc(fd.placeholder || '')}">${esc(v)}</textarea>`;
       break;
@@ -63,14 +76,57 @@ function fieldHTML(fd) {
       break;
     default:
       input = `<input id="${id}" name="${fd.name}" type="${fd.type || 'text'}" value="${esc(v)}" placeholder="${esc(fd.placeholder || '')}" autocomplete="off"${req}>`;
+      if (fd.suggestions?.length) input += `<div class="suggest" data-for="${fd.name}"></div>`;
   }
   return `<div class="field${fd.type === 'segmented' ? ' field-seg' : ''}"><label for="${id}">${esc(fd.label)}</label>${input}${hint}</div>`;
+}
+
+// Vorschläge unter einem Textfeld: filtern beim Tippen, Antippen übernimmt den Wert
+const MAX_SUGGEST = 8;
+function wireSuggestions(dlg, fields) {
+  for (const fd of fields) {
+    if (!fd.suggestions?.length) continue;
+    const input = dlg.querySelector(`[name="${fd.name}"]`);
+    const box = dlg.querySelector(`.suggest[data-for="${fd.name}"]`);
+    const show = () => {
+      const typed = input.value.trim().toLowerCase();
+      // Steht schon ein bekannter Name im Feld, die übrigen zum Wechseln anbieten
+      const q = fd.suggestions.some((s) => s.toLowerCase() === typed) ? '' : typed;
+      const list = fd.suggestions
+        .filter((s) => s.toLowerCase() !== typed && (!q || s.toLowerCase().includes(q)))
+        .sort((a, b) => (q ? Number(!a.toLowerCase().startsWith(q)) - Number(!b.toLowerCase().startsWith(q)) : 0))
+        .slice(0, MAX_SUGGEST);
+      box.innerHTML = list.map((s) => `<button type="button" class="sug" data-v="${esc(s)}">${esc(s)}</button>`).join('');
+    };
+    input.addEventListener('input', show);
+    box.addEventListener('click', (e) => {
+      const b = e.target.closest('.sug');
+      if (!b) return;
+      input.value = b.dataset.v;
+      show();
+    });
+    show();
+  }
+}
+
+// Liste ohne Doppelte (Groß/Klein egal), eigene Einträge zuerst
+export function uniqueList(...lists) {
+  const seen = new Set();
+  const out = [];
+  for (const s of lists.flat()) {
+    const t = String(s || '').trim();
+    if (!t || seen.has(t.toLowerCase())) continue;
+    seen.add(t.toLowerCase());
+    out.push(t);
+  }
+  return out;
 }
 
 function readValues(form, fields) {
   const fdata = new FormData(form);
   const out = {};
   for (const fd of fields) {
+    if (fd.type === 'checks') { out[fd.name] = fdata.getAll(fd.name).map(String); continue; }
     const raw = fdata.get(fd.name);
     out[fd.name] = fd.type === 'number' ? parseNum(raw) : (raw == null ? '' : String(raw).trim());
   }
@@ -96,6 +152,7 @@ export function sheet({ title, fields = [], submit = 'Speichern', intro = '', ex
       </div>
     </form>`;
     document.body.append(dlg);
+    wireSuggestions(dlg, fields);
     const form = dlg.querySelector('form');
     const err = dlg.querySelector('.form-error');
     let result = null;

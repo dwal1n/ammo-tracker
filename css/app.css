@@ -436,6 +436,7 @@ dialog.sheet {
   max-height: 92vh; color: var(--text); background: var(--surface);
   border-radius: var(--r-l) var(--r-l) 0 0;
   padding-bottom: env(safe-area-inset-bottom);
+  overflow: hidden;
 }
 dialog.sheet::backdrop { background: rgba(5, 8, 11, .55); }
 @media (min-width: 700px) { dialog.sheet { margin: auto; border-radius: var(--r-l); } }
@@ -490,3 +491,25 @@ dialog.sheet[open]::backdrop { animation: fade-in .2s ease-out; }
 
 /* iPad: Training und Einstellungen als ruhige Spalte */
 #view[data-view="training"], #view[data-view="more"] { max-width: 620px; }
+
+/* Vorschläge unter Textfeldern */
+.suggest { display: flex; flex-wrap: wrap; gap: 6px; }
+.suggest:empty { display: none; }
+.sug {
+  min-height: 34px; padding: 0 12px; border-radius: 999px; font-size: 14px;
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--line);
+}
+.sug:active { background: var(--brass); color: var(--on-brass); }
+
+/* Mehrfachauswahl (Meine Kaliber) */
+.checks-head { font-size: 13px; color: var(--muted); margin: 10px 0 6px; }
+.checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.check input { position: absolute; opacity: 0; pointer-events: none; }
+.check span {
+  display: inline-grid; place-items: center; min-height: 40px; padding: 0 14px; border-radius: 999px;
+  background: var(--bg); border: 1px solid var(--line); font-size: 15px; cursor: pointer;
+}
+.check input:checked + span { background: var(--brass); color: var(--on-brass); border-color: var(--brass); font-weight: 600; }
+.check input:focus-visible + span { outline: 3px solid var(--brass); outline-offset: 2px; }
+.my-cals { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-end; margin-bottom: 10px; }
+.my-cal { display: grid; justify-items: center; gap: 6px; font-size: 13px; color: var(--muted); }

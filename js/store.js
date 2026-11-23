@@ -13,6 +13,7 @@ const DEFAULT_SETTINGS = {
   lastLoad: '',
   lastLoadByFirearm: {},
   lastBackup: null,
+  myCalibers: [],
 };
 
 export const state = {
@@ -58,9 +59,25 @@ export function loadLabel(l) {
   return [parts || 'Ohne Namen', l.grain ? `${String(l.grain).replace('.', ',')} gr` : ''].filter(Boolean).join(' ');
 }
 
-export function caliberOptions() {
+// „Meine Kaliber“: ausgewählte, plus alle, die schon benutzt werden (und das gerade gewählte)
+export function visibleCalibers(keepId) {
+  const mine = state.settings.myCalibers || [];
+  if (!mine.length) return state.calibers;
+  const keep = new Set([...mine, keepId,
+    ...state.loads.map((l) => l.caliberId), ...state.firearms.map((f) => f.caliberId)]);
+  return state.calibers.filter((c) => keep.has(c.id));
+}
+
+export function defaultCaliber() {
+  const vis = visibleCalibers();
+  const last = state.settings.lastCaliber;
+  if (vis.some((c) => c.id === last)) return last;
+  return (vis.find((c) => c.id === 'c-9luger') || vis[0])?.id;
+}
+
+export function caliberOptions(keepId) {
   const order = Object.keys(FAMILY_LABELS);
-  return state.calibers
+  return visibleCalibers(keepId)
     .slice()
     .sort((a, b) => order.indexOf(a.family) - order.indexOf(b.family) || a.name.localeCompare(b.name, 'de'))
     .map((c) => ({ value: c.id, label: c.name, group: c.custom ? 'Eigene Kaliber' : FAMILY_LABELS[c.family] }));
