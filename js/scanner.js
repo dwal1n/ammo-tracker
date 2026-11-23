@@ -11,6 +11,36 @@ const PER_PACK = ['20', '25', '50', '100', '250'];
 const COUNT_CHIPS = ['1', '5', '10', '20'];
 
 // ---------------------------------------------------------------------------
+// Kamera bleibt während eines Scan-Durchgangs offen. iOS fragt bei Web-Apps
+// sonst bei jedem neuen Kamerazugriff erneut nach der Erlaubnis.
+// ---------------------------------------------------------------------------
+let shared = null;
+
+async function getStream() {
+  const live = shared?.getVideoTracks().some((t) => t.readyState === 'live');
+  if (live) {
+    shared.getVideoTracks().forEach((t) => { t.enabled = true; });
+    return shared;
+  }
+  shared = await navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+  });
+  return shared;
+}
+
+// Zwischen zwei Scans nur pausieren (kein Bild, Erlaubnis bleibt bestehen)
+function pauseStream() {
+  shared?.getVideoTracks().forEach((t) => { t.enabled = false; });
+}
+
+// Am Ende des Durchgangs Kamera wirklich ausschalten
+function releaseStream() {
+  shared?.getTracks().forEach((t) => t.stop());
+  shared = null;
+}
+
+// ---------------------------------------------------------------------------
 // Kamera-Ansicht. Gibt { id, text, kind } zurück oder null bei Abbruch.
 // ---------------------------------------------------------------------------
 function cameraDialog() {
@@ -40,7 +70,8 @@ function cameraDialog() {
 
     const stop = () => {
       running = false;
-      stream?.getTracks().forEach((t) => t.stop());
+      if (stream) pauseStream();
+      video.srcObject = null;
       stream = null;
     };
     const finish = (r) => { result = r; stop(); dlg.close(); };
@@ -76,13 +107,11 @@ function cameraDialog() {
     async function start() {
       try {
         await loadZXing();
-        stream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
-        });
+        stream = await getStream();
         if (!running) return stop();
         video.srcObject = stream;
-        await video.play().catch(() => {});
+        // Nicht auf play() warten: die Erkennungsschleife prüft selbst, ob schon Bilder da sind
+        video.play().catch(() => {});
         say('Strichcode oder QR-Code in den Rahmen halten');
         loop();
       } catch (e) {
@@ -269,15 +298,19 @@ export async function scanFlow() {
   if (!navigator.mediaDevices?.getUserMedia) {
     toast('Die Kamera ist hier nicht verfügbar. Du kannst die Nummer eintippen.');
   }
-  for (;;) {
-    const code = await cameraDialog();
-    if (!code) return;
-    let pack = S.state.packs.find((p) => p.id === code.id);
-    if (pack && !S.load(pack.loadId)) pack = null; // Sorte wurde gelöscht
-    if (!pack) pack = await linkPack(code, null);
-    if (!pack) return;
-    const r = await bookPack(pack, code);
-    if (!r.more) return;
+  try {
+    for (;;) {
+      const code = await cameraDialog();
+      if (!code) return;
+      let pack = S.state.packs.find((p) => p.id === code.id);
+      if (pack && !S.load(pack.loadId)) pack = null; // Sorte wurde gelöscht
+      if (!pack) pack = await linkPack(code, null);
+      if (!pack) return;
+      const r = await bookPack(pack, code);
+      if (!r.more) return;
+    }
+  } finally {
+    releaseStream();
   }
 }
 

@@ -559,3 +559,15 @@ dialog.scanner::backdrop { background: #000; }
 .suggest.chips .sug { min-width: 52px; min-height: 40px; font-size: 16px; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .scan-frame { transition: none; } }
 .suggest[hidden] { display: none; }
+
+/* Fertig-Leiste über der Bildschirmtastatur */
+.kb-bar {
+  position: fixed; left: 0; right: 0; top: 0; z-index: 1000;
+  display: flex; justify-content: flex-end; align-items: center;
+  height: 44px; padding: 0 max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+  background: color-mix(in srgb, var(--surface-2) 94%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+}
+.kb-bar[hidden] { display: none; }
+.kb-bar button { min-height: 40px; padding: 0 14px; color: var(--brass); font-weight: 700; font-size: 17px; }

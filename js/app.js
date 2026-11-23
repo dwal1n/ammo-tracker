@@ -2,6 +2,7 @@
 import * as S from './store.js';
 import { ICONS, toast } from './ui.js';
 import { motionOK } from './anim.js';
+import { initKeyboard } from './keyboard.js';
 import * as stock from './views/stock.js';
 import * as training from './views/training.js';
 import * as history from './views/history.js';
@@ -92,6 +93,7 @@ async function start() {
     main.innerHTML = '<div class="empty"><h2 class="label">Speicher nicht verfügbar</h2><p>Die App kann auf diesem Gerät keine Daten speichern. Im privaten Surfmodus von Safari funktioniert das nicht.</p></div>';
     return;
   }
+  initKeyboard();
   // Läuft ein Training, direkt dorthin
   if (S.activeSession()) S.state.tab = 'training';
   render();
