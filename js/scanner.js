@@ -193,6 +193,8 @@ async function linkPack(code, current) {
 // Anzahl Packungen eingeben und als Einkauf buchen
 // ---------------------------------------------------------------------------
 async function bookPack(pack, code) {
+  let lastMode = 'packs';
+  const roundsOf = (v) => (v.mode === 'rounds' ? (Number(v.count) || 0) : (Number(v.count) || 0) * pack.perPack);
   const l = S.load(pack.loadId);
   const c = S.caliber(l?.caliberId);
   const st = S.state.settings;
@@ -204,10 +206,13 @@ async function bookPack(pack, code) {
       </div>
       <p class="live-sum" aria-live="polite"></p>`,
     fields: [
+      { name: 'mode', label: 'Was buchst du?', type: 'segmented', value: 'packs',
+        options: [{ value: 'packs', label: 'Ganze Packungen' }, { value: 'rounds', label: 'Einzelne Patronen' }] },
       { name: 'count', label: 'Anzahl Packungen', type: 'number', value: 1, required: true, suggestions: COUNT_CHIPS, chips: true },
       { name: 'packPrice', label: 'Preis pro Packung (€)', type: 'number', inputmode: 'decimal', value: pack.packPrice != null ? Number(pack.packPrice).toFixed(2).replace('.', ',') : '', placeholder: 'optional' },
       { name: 'dealer', label: 'Händler', value: st.lastDealer || '', placeholder: 'optional',
-        suggestions: uniqueList(S.state.purchases.map((x) => x.dealer).filter((d) => d && d !== 'Anfangsbestand'), DEALERS) },
+        hint: 'Für Munition, die du schon länger hast: „Anfangsbestand“ wählen. Dann zählt sie nicht als Ausgabe in der Statistik.',
+        suggestions: uniqueList(['Anfangsbestand'], S.state.purchases.map((x) => x.dealer).filter((d) => d && d !== 'Anfangsbestand'), DEALERS) },
       { name: 'date', label: 'Datum', type: 'date', value: today(), required: true },
     ],
     submit: 'Buchen',
@@ -215,11 +220,25 @@ async function bookPack(pack, code) {
       { label: 'Buchen und weiter scannen', action: 'more', primary: true },
       { label: 'Andere Sorte zuordnen', action: 'relink' },
     ],
-    validate: (v) => (v.count > 0 && Number.isInteger(v.count) ? '' : 'Bitte die Anzahl der Packungen angeben.'),
+    validate: (v) => (v.count > 0 && Number.isInteger(v.count) ? ''
+      : v.mode === 'rounds' ? 'Bitte die Anzahl der Patronen angeben.' : 'Bitte die Anzahl der Packungen angeben.'),
     live: (v, dlg) => {
-      const n = (Number(v.count) || 0) * pack.perPack;
-      const price = v.packPrice ? (Number(v.count) || 0) * v.packPrice : null;
-      dlg.querySelector('.live-sum').innerHTML = `= <b class="num">${fmt(n)}</b> Patronen${price ? `, ${eur(price)}` : ''}`;
+      const rounds = v.mode === 'rounds';
+      // Beim Umschalten Feld leeren und Beschriftung anpassen
+      if (lastMode !== v.mode) {
+        lastMode = v.mode;
+        const input = dlg.querySelector('[name="count"]');
+        dlg.querySelector('label[for="f-count"]').textContent = rounds ? 'Anzahl Patronen' : 'Anzahl Packungen';
+        dlg.querySelector('.suggest[data-for="count"]').hidden = rounds;
+        input.value = rounds ? '' : '1';
+        if (rounds) input.focus();
+        v.count = rounds ? null : 1;
+      }
+      const n = roundsOf(v);
+      const price = v.packPrice ? (n / pack.perPack) * v.packPrice : null;
+      dlg.querySelector('.live-sum').innerHTML = rounds
+        ? `<b class="num">${fmt(n)}</b> Patronen aus einer angebrochenen Packung${price ? `, anteilig ${eur(price)}` : ''}`
+        : `= <b class="num">${fmt(n)}</b> Patronen${price ? `, ${eur(price)}` : ''}`;
     },
   });
   if (!r) return { done: false };
@@ -228,14 +247,16 @@ async function bookPack(pack, code) {
     return re ? bookPack(re, code) : { done: false };
   }
   const v = r.values;
-  const qty = v.count * pack.perPack;
+  const qty = roundsOf(v);
+  const partial = v.mode === 'rounds';
   S.markStockChange();
   await S.save('purchases', {
-    loadId: pack.loadId, date: v.date, qty, totalPrice: v.packPrice ? v.count * v.packPrice : null,
-    dealer: v.dealer, note: `${v.count} × ${pack.perPack} (gescannt)`,
+    loadId: pack.loadId, date: v.date, qty,
+    totalPrice: v.packPrice ? Math.round((qty / pack.perPack) * v.packPrice * 100) / 100 : null,
+    dealer: v.dealer, note: partial ? 'angebrochene Packung (gescannt)' : `${v.count} × ${pack.perPack} (gescannt)`,
   });
   await S.save('packs', { ...pack, packPrice: v.packPrice ?? pack.packPrice ?? null });
-  if (v.dealer) await S.setSetting('lastDealer', v.dealer);
+  if (v.dealer && v.dealer !== 'Anfangsbestand') await S.setSetting('lastDealer', v.dealer);
   toast(`${fmt(qty)} Patronen ${S.loadLabel(l)} gebucht`);
   S.render();
   return { done: true, more: r.action === 'more' };

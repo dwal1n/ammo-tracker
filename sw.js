@@ -1,7 +1,7 @@
 // Service Worker: hält alle App-Dateien auf dem Gerät, damit die App offline startet.
 // Er lädt ausschließlich Dateien der App selbst, nie etwas von fremden Servern.
 // Bei jeder Änderung an App-Dateien VERSION erhöhen (und js/version.js).
-const VERSION = 'ammo-v6';
+const VERSION = 'ammo-v7';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/version.js', './js/store.js', './js/db.js', './js/model.js', './js/ui.js', './js/anim.js',

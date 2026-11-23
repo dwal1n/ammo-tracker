@@ -558,3 +558,4 @@ dialog.scanner::backdrop { background: #000; }
 .sug.on { background: var(--brass); color: var(--on-brass); border-color: var(--brass); }
 .suggest.chips .sug { min-width: 52px; min-height: 40px; font-size: 16px; font-weight: 600; }
 @media (prefers-reduced-motion: reduce) { .scan-frame { transition: none; } }
+.suggest[hidden] { display: none; }
