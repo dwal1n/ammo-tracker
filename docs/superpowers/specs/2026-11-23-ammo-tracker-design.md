@@ -74,3 +74,13 @@ docs/superpowers/specs/2026-11-23-ammo-tracker-design.md
 - Lokal `python -m http.server` + Browser-Pane mit iPhone- und iPad-Viewport: kompletten Ablauf durchklicken (Sorte anlegen → Einkauf → Training mit 3 Durchgängen → beenden → Bestand/Statistik/Waffenzähler prüfen → Export → Daten löschen → Import)
 - Netzwerk-Tab prüfen: nach dem Laden keine einzige externe Anfrage; Offline-Modus: App lädt weiter
 - Abschließend auf dem echten iPhone über die GitHub-Pages-Adresse installieren und im Flugmodus testen (macht der Nutzer)
+
+## Nachträge (23.11.2026)
+
+- **Patronenbilder in zwei Stilen**, umschaltbar in den Einstellungen: „Realistisch“ (Standard, Metallglanz und Schatten) und „Technische Zeichnung“ (Maßzeichnung mit Hülsen- und Gesamtlänge). Der bisherige flache Stil bleibt nur intern. Vergleich: `Varianten.html`.
+- **Animationen** (nur CSS/SVG, abgeschaltet bei „Bewegung reduzieren“):
+  - Hülsenauswurf beim Eintragen eines Durchgangs, Zähler rollt hoch
+  - Patronenparade fährt beim ersten Öffnen des Bestands pro App-Start ein, Zahlen zählen hoch
+  - Bestandszahl zählt nach Einkauf/Trainingsende sichtbar um, Mindestbestand-Warnung blinkt einmal
+  - Formulare gleiten von unten herein, Tabwechsel blendet über
+- Vorschau-Dateien `Vorschau.html` und `Varianten.html` werden aus `dev/` per Node erzeugt und brauchen keinen Server.

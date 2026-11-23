@@ -234,10 +234,10 @@ function vGrad(id, stops) {
     .map(([o, c, a]) => `<stop offset="${o}" stop-color="${c}" stop-opacity="${a}"/>`).join('')}</linearGradient>`;
 }
 
-function svgWrap(caliber, opts, vb, w, h, defs, body, style = '') {
+function svgWrap(caliber, opts, vb, w, h, defs, body, cls = '') {
   const title = opts.title ?? caliber.name ?? '';
   const label = title ? ` role="img" aria-label="${escapeAttr(title)}"` : ' aria-hidden="true"';
-  return `<svg xmlns="http://www.w3.org/2000/svg" class="cartridge" viewBox="${vb}" width="${f(w)}" height="${f(h)}"${style}${label}>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" class="cartridge${cls}" viewBox="${vb}" width="${f(w)}" height="${f(h)}"${label}>`
     + `<defs>${defs}</defs>${body}</svg>`;
 }
 
@@ -410,8 +410,11 @@ function lineSVG(caliber, opts) {
   const id = `cl${++uid}`;
   const oal = d.oal;
   const Y = (h) => f(oal - h);
-  const sw = 0.2;
-  const defs = `<pattern id="${id}h" width="1.1" height="1.1" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0 L0 1.1" stroke="currentColor" stroke-width="0.14" opacity="0.7"/></pattern>`;
+  // Linien nie dünner als ca. 1 Pixel, damit kleine Bilder nicht verblassen
+  const sw = Math.max(0.2, 1.4 / scale);
+  const tw = Math.max(0.1, 0.8 / scale);
+  const hs = Math.max(1.1, 3.2 / scale);
+  const defs = `<pattern id="${id}h" width="${f(hs)}" height="${f(hs)}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0 L0 ${f(hs)}" stroke="currentColor" stroke-width="${f(Math.max(0.14, 0.9 / scale))}" opacity="0.7"/></pattern>`;
   let s = '';
 
   // Mittellinie
@@ -423,7 +426,7 @@ function lineSVG(caliber, opts) {
     s += `<path d="${hull}" fill="none" stroke="currentColor" stroke-width="${sw}"/>`;
     for (let i = -2; i <= 2; i++) {
       const x = (i / 2.6) * B * 0.85;
-      s += `<path d="M${f(x)} ${Y(top)} L${f(x)} ${Y(top - 2.8)}" stroke="currentColor" stroke-width="0.1" opacity="0.6"/>`;
+      s += `<path d="M${f(x)} ${Y(top)} L${f(x)} ${Y(top - 2.8)}" stroke="currentColor" stroke-width="${f(tw)}" opacity="0.6"/>`;
     }
     const headPts = [[R - 0.4, 0], [R, 0.4], [R, 1.6], [B + 0.15, 2.0], [B + 0.15, head]];
     s += `<path d="${mirrorPath(headPts, oal)}" fill="url(#${id}h)" stroke="currentColor" stroke-width="${sw}"/>`;
@@ -435,7 +438,7 @@ function lineSVG(caliber, opts) {
     }
     const prof = caseProfile(family, d);
     const cp = mirrorPath(prof, oal);
-    s += `<path d="${cp}" fill="var(--bg, #1a2027)" stroke="currentColor" stroke-width="${sw}"/>`;
+    s += `<path d="${cp}" class="bgfill" fill="#1a2027" stroke="currentColor" stroke-width="${sw}"/>`;
     s += `<path d="${cp}" fill="currentColor" opacity="0.08"/>`;
     // Kanten von Rand, Rille und Schulter als Querlinien
     const rimT = Math.max(0.9, d.rim * 0.1);
@@ -444,7 +447,7 @@ function lineSVG(caliber, opts) {
     if (d.shoulderAt) lines.push(d.shoulderAt, d.neckAt);
     for (const h of lines) {
       const half = halfWidthAt(prof, h + 0.001);
-      s += `<path d="M${f(-half)} ${Y(h)} L${f(half)} ${Y(h)}" stroke="currentColor" stroke-width="0.1" opacity="0.6"/>`;
+      s += `<path d="M${f(-half)} ${Y(h)} L${f(half)} ${Y(h)}" stroke="currentColor" stroke-width="${f(tw)}" opacity="0.6"/>`;
     }
   }
 
@@ -466,5 +469,5 @@ function lineSVG(caliber, opts) {
   }
 
   const vb = `${f(-R - pad)} ${f(-pad)} ${f(vbW)} ${f(vbH)}`;
-  return svgWrap(caliber, opts, vb, vbW * scale, vbH * scale, defs, s, ' style="color:var(--brass,#d4a64a)"');
+  return svgWrap(caliber, opts, vb, vbW * scale, vbH * scale, defs, s, ' cartridge-line');
 }

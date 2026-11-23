@@ -218,3 +218,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* Patronenbilder im Stil „technische Zeichnung“ */
+.cartridge-line { color: var(--brass); }
+.cartridge-line .bgfill { fill: var(--bg); }
