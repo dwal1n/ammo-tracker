@@ -11,7 +11,10 @@ export function render() {
   const st = S.stock();
   const loads = S.state.loads.filter((l) => !l.archived);
   const head = `<header class="page-head"><h1 class="label">Bestand</h1>
-    <button class="icon-btn" data-action="newLoad" aria-label="Neue Munitionssorte">${ICONS.plus}</button></header>`;
+    <span class="head-btns">
+      <button class="icon-btn" data-action="scan" aria-label="Packung scannen">${ICONS.scan}</button>
+      <button class="icon-btn" data-action="newLoad" aria-label="Neue Munitionssorte">${ICONS.plus}</button>
+    </span></header>`;
 
   if (!loads.length) {
     return `${head}<div class="empty">
@@ -174,6 +177,7 @@ async function editLoad(l) {
   }
   toast(isNew ? 'Sorte angelegt' : 'Gespeichert');
   S.render();
+  return saved;
 }
 
 async function purchase(l) {
@@ -255,6 +259,7 @@ export const actions = {
   scrollTo: (el) => document.getElementById(`cal-${el.dataset.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
   goBackup: () => { S.state.tab = 'more'; S.render(); },
   goCalibers: () => { S.state.tab = 'more'; S.render(); },
+  scan: async () => (await import('../scanner.js')).scanFlow(),
 };
 
 export { editLoad };

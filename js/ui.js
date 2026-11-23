@@ -73,10 +73,11 @@ function fieldHTML(fd) {
       break;
     case 'number':
       input = `<input id="${id}" name="${fd.name}" type="text" inputmode="${fd.inputmode || 'numeric'}" value="${esc(v)}" placeholder="${esc(fd.placeholder || '')}" autocomplete="off"${req}${fd.pattern ? ` pattern="${fd.pattern}"` : ''}>`;
+      if (fd.suggestions?.length) input += `<div class="suggest${fd.chips ? ' chips' : ''}" data-for="${fd.name}"></div>`;
       break;
     default:
-      input = `<input id="${id}" name="${fd.name}" type="${fd.type || 'text'}" value="${esc(v)}" placeholder="${esc(fd.placeholder || '')}" autocomplete="off"${req}>`;
-      if (fd.suggestions?.length) input += `<div class="suggest" data-for="${fd.name}"></div>`;
+      input = `<input id="${id}" name="${fd.name}" type="${fd.type || 'text'}" value="${esc(v)}" placeholder="${esc(fd.placeholder || '')}" autocomplete="off"${fd.inputmode ? ` inputmode="${fd.inputmode}"` : ''}${req}>`;
+      if (fd.suggestions?.length) input += `<div class="suggest${fd.chips ? ' chips' : ''}" data-for="${fd.name}"></div>`;
   }
   return `<div class="field${fd.type === 'segmented' ? ' field-seg' : ''}"><label for="${id}">${esc(fd.label)}</label>${input}${hint}</div>`;
 }
@@ -89,6 +90,11 @@ function wireSuggestions(dlg, fields) {
     const input = dlg.querySelector(`[name="${fd.name}"]`);
     const box = dlg.querySelector(`.suggest[data-for="${fd.name}"]`);
     const show = () => {
+      // chips: feste Schnellwahl, immer alle zeigen
+      if (fd.chips) {
+        box.innerHTML = fd.suggestions.map((s) => `<button type="button" class="sug${input.value.trim() === s ? ' on' : ''}" data-v="${esc(s)}">${esc(s)}</button>`).join('');
+        return;
+      }
       const typed = input.value.trim().toLowerCase();
       // Steht schon ein bekannter Name im Feld, die übrigen zum Wechseln anbieten
       const q = fd.suggestions.some((s) => s.toLowerCase() === typed) ? '' : typed;
@@ -103,7 +109,7 @@ function wireSuggestions(dlg, fields) {
       const b = e.target.closest('.sug');
       if (!b) return;
       input.value = b.dataset.v;
-      show();
+      input.dispatchEvent(new Event('input', { bubbles: true }));
     });
     show();
   }
@@ -133,7 +139,8 @@ function readValues(form, fields) {
   return out;
 }
 
-export function sheet({ title, fields = [], submit = 'Speichern', intro = '', extra = [], validate }) {
+// live(values, dlg): wird bei jeder Eingabe aufgerufen, z. B. für eine Summenzeile
+export function sheet({ title, fields = [], submit = 'Speichern', intro = '', extra = [], validate, live }) {
   return new Promise((resolve) => {
     const dlg = document.createElement('dialog');
     dlg.className = 'sheet';
@@ -155,6 +162,11 @@ export function sheet({ title, fields = [], submit = 'Speichern', intro = '', ex
     wireSuggestions(dlg, fields);
     const form = dlg.querySelector('form');
     const err = dlg.querySelector('.form-error');
+    if (live) {
+      const run = () => live(readValues(form, fields), dlg);
+      form.addEventListener('input', run);
+      run();
+    }
     let result = null;
 
     const finish = (action) => {
@@ -223,5 +235,6 @@ export const ICONS = {
   plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
   trash: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
   warn: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2 21h20L12 3zM12 10v5M12 18v.5"/></svg>',
+  scan: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V4h3M18 4h3v3M21 17v3h-3M6 20H3v-3M7 8v8M10 8v8M13 8v8M16.5 8v8"/></svg>',
   chevron: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg>',
 };

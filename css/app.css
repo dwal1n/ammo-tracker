@@ -519,3 +519,42 @@ dialog.sheet[open]::backdrop { animation: fade-in .2s ease-out; }
 .howto summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--brass); }
 .howto ol { margin: 4px 0 10px; padding-left: 20px; display: grid; gap: 6px; }
 .howto p { font-size: 14px; }
+
+/* Scanner */
+.head-btns { display: flex; gap: 8px; }
+dialog.scanner {
+  border: 0; padding: 0; margin: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+  background: #000; color: #fff; display: flex; flex-direction: column;
+}
+dialog.scanner::backdrop { background: #000; }
+.scan-view { position: relative; flex: 1; overflow: hidden; }
+.scan-view video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.scan-frame {
+  position: absolute; left: 50%; top: 45%; width: min(78vw, 420px); height: min(42vw, 230px);
+  transform: translate(-50%, -50%); border-radius: 16px;
+  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .45); border: 3px solid var(--brass);
+  transition: border-color .15s, transform .2s;
+}
+.scan-frame span { position: absolute; left: 8%; right: 8%; top: 50%; height: 2px; background: rgba(229, 83, 61, .85); }
+.scan-frame.hit { border-color: #7fae8a; transform: translate(-50%, -50%) scale(1.04); }
+.scan-status {
+  position: absolute; left: 16px; right: 16px; bottom: 18px; margin: 0; text-align: center;
+  font-size: 16px; text-shadow: 0 1px 3px #000;
+}
+.scan-actions {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #0d1115;
+  padding: 14px max(16px, env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+}
+.scan-actions .btn-primary { grid-column: 1 / -1; }
+.scan-actions .btn-secondary { background: #222a32; color: #e8ebee; }
+.scan-hit { display: grid; grid-template-columns: 44px 1fr; gap: 12px; align-items: center; margin-bottom: 8px; }
+.scan-hit .thumb { display: flex; justify-content: center; }
+.scan-hit b { display: block; font-size: 18px; }
+.scan-hit small { color: var(--muted); }
+.live-sum { margin: 4px 0 16px; font-size: 17px; }
+.live-sum .num { font-size: 30px; color: var(--brass); }
+.code-line { margin: 0 0 14px; font-size: 14px; }
+.code-line code { font-size: 14px; overflow-wrap: anywhere; }
+.sug.on { background: var(--brass); color: var(--on-brass); border-color: var(--brass); }
+.suggest.chips .sug { min-width: 52px; min-height: 40px; font-size: 16px; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .scan-frame { transition: none; } }

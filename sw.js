@@ -1,11 +1,11 @@
 // Service Worker: hält alle App-Dateien auf dem Gerät, damit die App offline startet.
 // Er lädt ausschließlich Dateien der App selbst, nie etwas von fremden Servern.
 // Bei jeder Änderung an App-Dateien VERSION erhöhen.
-const VERSION = 'ammo-v3';
+const VERSION = 'ammo-v4';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/store.js', './js/db.js', './js/model.js', './js/ui.js', './js/anim.js',
-  './js/calibers.js', './js/cartridge-svg.js',
+  './js/calibers.js', './js/cartridge-svg.js', './js/scan.js', './js/scanner.js', './vendor/zxing.min.js',
   './js/views/stock.js', './js/views/training.js', './js/views/history.js', './js/views/firearms.js', './js/views/settings.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
 ];

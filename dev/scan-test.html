@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><title>Scan-Test mit Beispielfotos</title>
+<style>body{font-family:system-ui;background:#1a2027;color:#e8ebee;padding:20px}li{margin:6px 0}</style></head>
+<body>
+<h1>Scan-Test</h1>
+<ul id="out"></ul>
+<script type="module">
+import { decodeImage } from '../js/scan.js';
+const files = ['IMG_0922.jpg', 'IMG_0923.jpg', 'IMG_0924.jpg', 'IMG_0925.jpg', 'IMG_0926.jpg', 'IMG_0927.jpg'];
+const out = document.getElementById('out');
+window.results = [];
+for (const f of files) {
+  const img = new Image();
+  img.src = `../Packungen%20Beispiele/${f}`;
+  await img.decode();
+  const t0 = performance.now();
+  const r = await decodeImage(img);
+  const ms = Math.round(performance.now() - t0);
+  window.results.push({ f, r, ms });
+  out.insertAdjacentHTML('beforeend', `<li>${f}: ${r ? `${r.format} → ${r.text}` : 'nichts erkannt'} (${ms} ms)</li>`);
+}
+window.done = true;
+</script>
+</body>
+</html>

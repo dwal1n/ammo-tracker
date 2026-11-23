@@ -2,7 +2,7 @@
 import * as db from './db.js';
 import { DEFAULT_CALIBERS, FAMILY_LABELS } from './calibers.js';
 import { cartridgeSVG } from './cartridge-svg.js';
-import { stockByLoad, avgPrice, STORES, newId, mergeData } from './model.js';
+import { stockByLoad, avgPrice, STORES, newId, mergeData, SCHEMA_VERSION } from './model.js';
 import { nowLocal } from './ui.js';
 
 const DEFAULT_SETTINGS = {
@@ -17,7 +17,7 @@ const DEFAULT_SETTINGS = {
 };
 
 export const state = {
-  calibers: [], loads: [], purchases: [], adjustments: [], firearms: [], sessions: [],
+  calibers: [], loads: [], purchases: [], adjustments: [], firearms: [], sessions: [], packs: [],
   settings: { ...DEFAULT_SETTINGS },
   // Löschvermerke für den Abgleich zwischen Geräten: { id: zeitpunkt }
   tombstones: {},
@@ -142,7 +142,7 @@ export async function replaceAll(data, settings, tombstones = {}) {
 export function exportData() {
   const data = {};
   for (const s of STORES) data[s] = state[s];
-  return { app: 'ammo-tracker', schemaVersion: 1, exported: nowLocal(), settings: state.settings, tombstones: state.tombstones, data };
+  return { app: 'ammo-tracker', schemaVersion: SCHEMA_VERSION, exported: nowLocal(), settings: state.settings, tombstones: state.tombstones, data };
 }
 
 // Eingelesene Sicherung mit diesem Gerät zusammenführen; Einstellungen bleiben die eigenen

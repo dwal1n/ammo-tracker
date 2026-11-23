@@ -1,7 +1,32 @@
 // Reine Rechenlogik ohne Browser-Abhängigkeiten (in Node testbar).
 
-export const SCHEMA_VERSION = 1;
-export const STORES = ['calibers', 'loads', 'purchases', 'adjustments', 'firearms', 'sessions'];
+export const SCHEMA_VERSION = 2;
+// packs: gelernte Packungen { id: 'ean:…' | 'qr:…', loadId, perPack, packPrice, ambiguous }
+export const STORES = ['calibers', 'loads', 'purchases', 'adjustments', 'firearms', 'sessions', 'packs'];
+
+// ---- Strichcodes -----------------------------------------------------------
+
+// Prüfziffer für EAN-8, UPC-A (12) und EAN-13
+export function eanValid(code) {
+  if (!/^(\d{8}|\d{12}|\d{13})$/.test(code)) return false;
+  const d = [...code].map(Number);
+  const check = d.pop();
+  let sum = 0;
+  d.reverse().forEach((n, i) => { sum += n * (i % 2 === 0 ? 3 : 1); });
+  return (10 - (sum % 10)) % 10 === check;
+}
+
+// Von Hand eingetippte Nummer (Ziffern unter dem Strichcode)
+export function normalizeTyped(raw) {
+  let text = String(raw || '').replace(/\D/g, '');
+  if (!eanValid(text)) return { ok: false };
+  if (text.length === 12) text = '0' + text;
+  return { ok: true, id: `ean:${text}`, text };
+}
+
+// QR-Codes, die auf allen Packungen eines Herstellers gleich sind
+const GENERIC_CODES = [/magtechammunition\.com\/products\/product-search/i];
+export const isGenericCode = (text) => GENERIC_CODES.some((re) => re.test(String(text)));
 
 export function newId() {
   if (globalThis.crypto?.randomUUID) return crypto.randomUUID();

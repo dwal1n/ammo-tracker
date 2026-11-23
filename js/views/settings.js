@@ -53,6 +53,13 @@ export function render() {
     <input type="file" id="importFile" accept="application/json,.json" hidden>
   </section>
   <section class="set">
+    <h2 class="sub-head">Gelernte Packungen</h2>
+    ${S.state.packs.length ? `<div class="cal-list">${S.state.packs.map((p) => {
+      const l = S.load(p.loadId);
+      return `<button class="cal-row" data-action="editPack" data-id="${esc(p.id)}">${S.cart(S.caliber(l?.caliberId), { height: 40 }, l)}<span>${esc(l ? S.loadLabel(l) : 'Sorte gelöscht')}<small>${p.ambiguous ? 'nicht eindeutig, wird ignoriert' : `${fmt(p.perPack)} pro Packung`}, ${p.kind === 'qr' ? 'QR' : 'EAN'} ${esc(p.code)}</small></span></button>`;
+    }).join('')}</div>` : '<p class="muted">Noch keine. Scanne im Bestand eine Packung über das Strichcode-Symbol, dann merkt sich die App sie hier.</p>'}
+  </section>
+  <section class="set">
     <h2 class="sub-head">Eigene Kaliber</h2>
     <p class="muted">${S.state.calibers.length - custom.length} Kaliber sind vorinstalliert. Fehlt deins, leg es hier an. Das Bild wird aus den Maßen gezeichnet.</p>
     ${custom.length ? `<div class="cal-list">${custom.map((c) => `<button class="cal-row" data-action="editCaliber" data-id="${c.id}">${S.cart(c, { height: 44 })}<span>${esc(c.name)}<small>${FAMILY_LABELS[c.family]}</small></span></button>`).join('')}</div>` : ''}
@@ -221,7 +228,29 @@ async function pickCalibers() {
   S.render();
 }
 
+async function editPack(p) {
+  if (!p) return;
+  const l = S.load(p.loadId);
+  const r = await sheet({
+    title: 'Gelernte Packung',
+    intro: `<p class="sheet-text">${esc(l ? S.loadLabel(l) : 'Sorte gelöscht')}</p><p class="code-line"><span class="muted">${p.kind === 'qr' ? 'QR-Code' : 'Strichcode'}</span> <code>${esc(p.code)}</code></p>`,
+    fields: [{ name: 'perPack', label: 'Patronen pro Packung', type: 'number', value: p.perPack, required: true }],
+    submit: 'Sichern',
+    extra: [{ label: 'Verknüpfung löschen', action: 'delete', danger: true }],
+  });
+  if (!r) return;
+  if (r.action === 'delete') {
+    await S.remove('packs', p.id);
+    toast('Verknüpfung gelöscht. Beim nächsten Scan fragt die App neu.');
+  } else {
+    await S.save('packs', { ...p, perPack: r.values.perPack || p.perPack });
+    toast('Gespeichert');
+  }
+  S.render();
+}
+
 export const actions = {
+  editPack: (el) => editPack(S.state.packs.find((p) => p.id === el.dataset.id)),
   pickCalibers,
   setStyle: async (el) => { await S.setSetting('cartridgeStyle', el.dataset.v); S.render(); },
   setTheme: async (el) => { await S.setSetting('theme', el.dataset.v); S.render(); },
