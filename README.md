@@ -1,5 +1,7 @@
 # Ammo Tracker
 
+**App öffnen:** https://dwal1n.github.io/ammo-tracker/
+
 Munitionsbestand und Training für Sportschützen, als Web-App für iPhone und iPad.
 Alle Daten bleiben auf dem Gerät: kein Konto, keine Cloud, keine Werbung, keine Statistik-Dienste.
 Nach der Installation lädt die App nichts mehr aus dem Internet und darf technisch auch keine Verbindung nach außen aufbauen.
