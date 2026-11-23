@@ -188,7 +188,8 @@ async function purchase(l) {
       { name: 'qty', label: 'Menge (Patronen)', type: 'number', required: true, autofocus: true },
       { name: 'totalPrice', label: 'Gesamtpreis (€)', type: 'number', inputmode: 'decimal', placeholder: 'optional' },
       { name: 'dealer', label: 'Händler', value: S.state.settings.lastDealer || '', placeholder: 'optional',
-        suggestions: uniqueList(S.state.purchases.map((x) => x.dealer).filter((d) => d !== 'Anfangsbestand'), DEALERS) },
+        hint: 'Für Munition, die du schon länger hast: „Anfangsbestand“ wählen. Dann zählt sie nicht als Ausgabe in der Statistik.',
+        suggestions: S.dealerSuggestions() },
       { name: 'date', label: 'Datum', type: 'date', value: today(), required: true },
     ],
     submit: 'Hinzufügen',
@@ -197,7 +198,7 @@ async function purchase(l) {
   if (!r) return;
   S.markStockChange();
   await S.save('purchases', { loadId: l.id, ...r.values });
-  if (r.values.dealer) await S.setSetting('lastDealer', r.values.dealer);
+  if (r.values.dealer && r.values.dealer !== S.START_DEALER) await S.setSetting('lastDealer', r.values.dealer);
   toast(`${fmt(r.values.qty)} Patronen hinzugefügt`);
   S.render();
 }

@@ -1,9 +1,9 @@
 // Zentraler Zustand der App: alle Daten im Speicher, jede Änderung sofort in IndexedDB.
 import * as db from './db.js';
-import { DEFAULT_CALIBERS, FAMILY_LABELS } from './calibers.js';
+import { DEFAULT_CALIBERS, FAMILY_LABELS, DEALERS } from './calibers.js';
 import { cartridgeSVG } from './cartridge-svg.js';
 import { stockByLoad, avgPrice, STORES, newId, mergeData, SCHEMA_VERSION } from './model.js';
-import { nowLocal } from './ui.js';
+import { nowLocal, uniqueList } from './ui.js';
 
 const DEFAULT_SETTINGS = {
   cartridgeStyle: 'real',
@@ -76,6 +76,12 @@ export function defaultCaliber() {
   const last = state.settings.lastCaliber;
   if (vis.some((c) => c.id === last)) return last;
   return (vis.find((c) => c.id === 'c-9luger') || vis[0])?.id;
+}
+
+// Händler-Vorschläge für alle Einkaufsformulare: Anfangsbestand zuerst, dann eigene, dann bekannte
+export const START_DEALER = 'Anfangsbestand';
+export function dealerSuggestions() {
+  return uniqueList([START_DEALER], state.purchases.map((x) => x.dealer).filter((d) => d && d !== START_DEALER), DEALERS);
 }
 
 export function caliberOptions(keepId) {

@@ -1,3 +1,3 @@
 // App-Version. Bei jedem Update BEIDES anpassen: hier und VERSION in sw.js ('ammo-v<number>').
 // tests/version.test.js prüft, dass beide übereinstimmen.
-export const APP_VERSION = { number: 7, date: '23.11.2026' };
+export const APP_VERSION = { number: 8, date: '23.11.2026' };

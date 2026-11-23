@@ -212,7 +212,7 @@ async function bookPack(pack, code) {
       { name: 'packPrice', label: 'Preis pro Packung (€)', type: 'number', inputmode: 'decimal', value: pack.packPrice != null ? Number(pack.packPrice).toFixed(2).replace('.', ',') : '', placeholder: 'optional' },
       { name: 'dealer', label: 'Händler', value: st.lastDealer || '', placeholder: 'optional',
         hint: 'Für Munition, die du schon länger hast: „Anfangsbestand“ wählen. Dann zählt sie nicht als Ausgabe in der Statistik.',
-        suggestions: uniqueList(['Anfangsbestand'], S.state.purchases.map((x) => x.dealer).filter((d) => d && d !== 'Anfangsbestand'), DEALERS) },
+        suggestions: S.dealerSuggestions() },
       { name: 'date', label: 'Datum', type: 'date', value: today(), required: true },
     ],
     submit: 'Buchen',
