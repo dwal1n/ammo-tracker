@@ -2,7 +2,7 @@
 import * as db from './db.js';
 import { DEFAULT_CALIBERS, FAMILY_LABELS } from './calibers.js';
 import { cartridgeSVG } from './cartridge-svg.js';
-import { stockByLoad, avgPrice, STORES, newId } from './model.js';
+import { stockByLoad, avgPrice, STORES, newId, mergeData } from './model.js';
 import { nowLocal } from './ui.js';
 
 const DEFAULT_SETTINGS = {
@@ -19,6 +19,8 @@ const DEFAULT_SETTINGS = {
 export const state = {
   calibers: [], loads: [], purchases: [], adjustments: [], firearms: [], sessions: [],
   settings: { ...DEFAULT_SETTINGS },
+  // Löschvermerke für den Abgleich zwischen Geräten: { id: zeitpunkt }
+  tombstones: {},
   tab: 'stock',
   // Einmal-Effekte für Animationen: { introDone, stockBefore: Map }
   fx: { introDone: false, stockBefore: null },
@@ -32,6 +34,7 @@ export async function init() {
   await db.open();
   Object.assign(state, await db.loadAll());
   state.settings = { ...DEFAULT_SETTINGS, ...((await db.getMeta('settings')) || {}) };
+  state.tombstones = (await db.getMeta('tombstones')) || {};
   // Vorgabe-Kaliber beim ersten Start anlegen, später fehlende ergänzen
   const have = new Set(state.calibers.map((c) => c.id));
   for (const c of DEFAULT_CALIBERS) {
@@ -99,6 +102,7 @@ export function cart(cal, opts = {}, ld = null) {
 
 export async function save(store, obj) {
   if (!obj.id) obj.id = newId();
+  obj.updated = nowLocal();
   await db.put(store, obj);
   const arr = state[store];
   const i = arr.findIndex((x) => x.id === obj.id);
@@ -109,6 +113,8 @@ export async function save(store, obj) {
 export async function remove(store, id) {
   await db.remove(store, id);
   state[store] = state[store].filter((x) => x.id !== id);
+  state.tombstones[id] = nowLocal();
+  await db.setMeta('tombstones', state.tombstones);
 }
 
 export async function setSetting(key, value) {
@@ -121,9 +127,11 @@ export function markStockChange() {
   state.fx.stockBefore = stock();
 }
 
-export async function replaceAll(data, settings) {
+export async function replaceAll(data, settings, tombstones = {}) {
   await db.replaceAll(data);
   for (const s of STORES) state[s] = data[s] || [];
+  state.tombstones = tombstones;
+  await db.setMeta('tombstones', tombstones);
   if (settings) {
     state.settings = { ...DEFAULT_SETTINGS, ...settings };
     await db.setMeta('settings', state.settings);
@@ -134,5 +142,16 @@ export async function replaceAll(data, settings) {
 export function exportData() {
   const data = {};
   for (const s of STORES) data[s] = state[s];
-  return { app: 'ammo-tracker', schemaVersion: 1, exported: nowLocal(), settings: state.settings, data };
+  return { app: 'ammo-tracker', schemaVersion: 1, exported: nowLocal(), settings: state.settings, tombstones: state.tombstones, data };
+}
+
+// Eingelesene Sicherung mit diesem Gerät zusammenführen; Einstellungen bleiben die eigenen
+export async function mergeIn(backup) {
+  const local = { data: {}, tombstones: state.tombstones };
+  for (const s of STORES) local.data[s] = state[s];
+  // Ein laufendes Training gehört zu dem Gerät, auf dem es läuft
+  const incoming = { ...backup.data, sessions: (backup.data.sessions || []).filter((x) => x.status !== 'active') };
+  const r = mergeData(local, { data: incoming, tombstones: backup.tombstones || {} });
+  await replaceAll(r.data, null, r.tombstones);
+  return r.stats;
 }

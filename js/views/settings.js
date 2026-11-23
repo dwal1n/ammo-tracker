@@ -34,13 +34,22 @@ export function render() {
     <div class="seg-row">${themeBtn('dark', 'Dunkel')}${themeBtn('light', 'Hell')}${themeBtn('auto', 'Wie iPhone')}</div>
   </section>
   <section class="set" id="backup">
-    <h2 class="sub-head">Datensicherung</h2>
-    <p class="muted">Alle Daten liegen nur auf diesem Gerät: ${counts}. Sichere sie regelmäßig als Datei, zum Beispiel in der Dateien-App. Damit kannst du sie auch auf ein anderes Gerät übertragen.</p>
+    <h2 class="sub-head">Sicherung und Abgleich</h2>
+    <p class="muted">Alle Daten liegen nur auf diesem Gerät: ${counts}. Sichere sie regelmäßig als Datei. Dieselbe Datei gleicht auch iPhone und iPad ab.</p>
     <p>${st.lastBackup ? `Letzte Sicherung: <b>${dateDE(st.lastBackup)}</b>` : '<b>Noch keine Sicherung angelegt.</b>'}</p>
     <div class="btn-row">
       <button class="btn-primary" data-action="exportData">Sicherung erstellen</button>
-      <button class="btn-secondary" data-action="importData">Sicherung laden</button>
+      <button class="btn-secondary" data-action="importData">Datei laden</button>
     </div>
+    <details class="howto">
+      <summary>So gleichst du iPhone und iPad ab</summary>
+      <ol>
+        <li>Auf dem iPhone <b>Sicherung erstellen</b> und per <b>AirDrop</b> ans iPad schicken.</li>
+        <li>Auf dem iPad <b>Datei laden</b> und <b>Zusammenführen</b> wählen.</li>
+        <li>Auf dem iPad gleich <b>Zurückschicken</b> antippen und die Datei aufs iPhone schicken. Dort ebenfalls zusammenführen.</li>
+      </ol>
+      <p class="muted">Danach haben beide Geräte denselben Stand. Was du auf einem Gerät gelöscht hast, verschwindet dabei auch auf dem anderen.</p>
+    </details>
     <input type="file" id="importFile" accept="application/json,.json" hidden>
   </section>
   <section class="set">
@@ -80,6 +89,7 @@ async function exportData() {
     }
   } catch (e) {
     if (e?.name === 'AbortError') return; // Teilen abgebrochen
+    if (e?.name === 'NotAllowedError') { toast('Bitte jetzt auf „Sicherung erstellen“ tippen.'); return; }
     toast('Sicherung konnte nicht erstellt werden.');
     return;
   }
@@ -100,14 +110,40 @@ function importData() {
     if (!v.ok) return toast(v.errors[0]);
     const d = obj.data;
     const n = (k) => (d[k] || []).length;
-    const ok = await confirmSheet('Sicherung laden?',
-      `Die Sicherung vom ${dateDE(obj.exported)} enthält ${n('loads')} Sorten, ${n('purchases')} Einkäufe, ${n('sessions')} Trainings und ${n('firearms')} Waffen. Sie ersetzt alle Daten, die jetzt auf diesem Gerät sind.`,
-      'Ersetzen und laden', true);
-    if (!ok) return;
-    await S.replaceAll(d, { ...obj.settings, lastBackup: S.state.settings.lastBackup });
+    const r = await sheet({
+      title: 'Datei laden',
+      submit: null,
+      intro: `<p class="sheet-text">Die Datei vom ${dateDE(obj.exported)} enthält ${n('loads')} Sorten, ${n('purchases')} Einkäufe, ${n('sessions')} Trainings und ${n('firearms')} Waffen.</p>
+        <p class="sheet-text muted"><b>Zusammenführen</b> behält alles von diesem Gerät und ergänzt, was neu ist. <b>Ersetzen</b> löscht die Daten auf diesem Gerät und übernimmt nur die Datei.</p>`,
+      extra: [
+        { label: 'Zusammenführen', action: 'merge', primary: true },
+        { label: 'Alles ersetzen', action: 'replace', danger: true },
+      ],
+    });
+    if (!r) return;
+    S.markStockChange();
     S.state.fx.introDone = false;
-    toast('Sicherung geladen');
+    if (r.action === 'replace') {
+      if (!await confirmSheet('Alles ersetzen?', 'Alle Daten auf diesem Gerät werden durch die Datei ersetzt. Was nur hier eingetragen war, geht verloren.', 'Ersetzen', true)) return;
+      await S.replaceAll(d, { ...obj.settings, lastBackup: S.state.settings.lastBackup }, obj.tombstones || {});
+      toast('Datei geladen');
+      return S.render();
+    }
+    const stats = await S.mergeIn(obj);
     S.render();
+    const parts = [
+      stats.added ? `${fmt(stats.added)} neu` : '',
+      stats.updated ? `${fmt(stats.updated)} aktualisiert` : '',
+      stats.removed ? `${fmt(stats.removed)} entfernt` : '',
+    ].filter(Boolean);
+    const back = await sheet({
+      title: 'Zusammengeführt',
+      submit: null,
+      intro: `<p class="sheet-text">${parts.length ? `Einträge: ${parts.join(', ')}.` : 'Beide Stände waren schon gleich.'}</p>
+        <p class="sheet-text muted">Damit das andere Gerät auch auf diesem Stand ist, schick ihm jetzt eine Sicherung zurück und führe sie dort ebenfalls zusammen.</p>`,
+      extra: [{ label: 'Zurückschicken', action: 'send', primary: true }, { label: 'Später', action: 'later' }],
+    });
+    if (back?.action === 'send') await exportData();
   };
   input.click();
 }

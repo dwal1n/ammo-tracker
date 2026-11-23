@@ -93,6 +93,39 @@ export function monthlyStats({ purchases = [], sessions = [] }, months = 12, now
   return [...rows.values()];
 }
 
+// Zwei Datenstände zusammenführen (z. B. iPhone und iPad).
+// a = dieses Gerät, b = eingelesene Datei; jeweils { data: { store: [rows] }, tombstones: { id: zeit } }
+// Regeln: Vereinigung nach id; bei gleicher id gewinnt das neuere `updated`;
+// ein Löschvermerk entfernt einen Eintrag, wenn er nicht später als der Eintrag ist.
+export function mergeData(a, b) {
+  const ts = (r) => String(r?.updated || '');
+  const tombstones = { ...(a.tombstones || {}) };
+  for (const [id, t] of Object.entries(b.tombstones || {})) {
+    if (!tombstones[id] || t > tombstones[id]) tombstones[id] = t;
+  }
+  const stats = { added: 0, updated: 0, removed: 0 };
+  const data = {};
+  for (const s of STORES) {
+    const local = new Map((a.data?.[s] || []).map((r) => [r.id, r]));
+    const out = new Map(local);
+    for (const r of b.data?.[s] || []) {
+      const mine = out.get(r.id);
+      if (!mine || ts(r) > ts(mine)) out.set(r.id, r);
+    }
+    for (const [id, r] of out) {
+      const t = tombstones[id];
+      if (t && t >= ts(r)) out.delete(id);
+    }
+    for (const [id, r] of out) {
+      if (!local.has(id)) stats.added++;
+      else if (local.get(id) !== r) stats.updated++;
+    }
+    for (const id of local.keys()) if (!out.has(id)) stats.removed++;
+    data[s] = [...out.values()];
+  }
+  return { data, tombstones, stats };
+}
+
 export function validateBackup(obj) {
   const errors = [];
   if (!obj || typeof obj !== 'object' || obj.app !== 'ammo-tracker') {
@@ -104,6 +137,9 @@ export function validateBackup(obj) {
   } else {
     for (const k of STORES) {
       if (obj.data[k] !== undefined && !Array.isArray(obj.data[k])) errors.push(`Bereich „${k}“ ist beschädigt.`);
+    }
+    if (obj.tombstones !== undefined && (typeof obj.tombstones !== 'object' || Array.isArray(obj.tombstones))) {
+      errors.push('Die Löschvermerke in der Sicherung sind beschädigt.');
     }
   }
   return { ok: errors.length === 0, errors };

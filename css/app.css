@@ -513,3 +513,9 @@ dialog.sheet[open]::backdrop { animation: fade-in .2s ease-out; }
 .check input:focus-visible + span { outline: 3px solid var(--brass); outline-offset: 2px; }
 .my-cals { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: flex-end; margin-bottom: 10px; }
 .my-cal { display: grid; justify-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+
+/* Anleitung Abgleich */
+.howto { margin-top: 14px; background: var(--surface); border-radius: var(--r-m); padding: 4px 14px; }
+.howto summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-weight: 600; color: var(--brass); }
+.howto ol { margin: 4px 0 10px; padding-left: 20px; display: grid; gap: 6px; }
+.howto p { font-size: 14px; }
