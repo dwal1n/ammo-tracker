@@ -571,3 +571,7 @@ dialog.scanner::backdrop { background: #000; }
 }
 .kb-bar[hidden] { display: none; }
 .kb-bar button { min-height: 40px; padding: 0 14px; color: var(--brass); font-weight: 700; font-size: 17px; }
+
+/* Parade zentriert; bei Überbreite normal wischbar (auto-Ränder statt justify-content: center) */
+.parade-item:first-child { margin-left: auto; }
+.parade-item:last-child { margin-right: auto; }
