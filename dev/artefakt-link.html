@@ -1,0 +1,118 @@
+<title>Ammo Tracker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;600&display=swap">
+<style>
+/* Einspaltige Karteikarte: Link oben, QR-Code zum Weitergeben, Installation in drei Schritten */
+:root {
+  --bg: #1a2027;
+  --surface: #222a32;
+  --line: #36424e;
+  --text: #e8ebee;
+  --muted: #9aa6b2;
+  --brass: #d4a64a;
+  --on-brass: #1a2027;
+  --font-display: "Barlow Condensed", "DIN Condensed", "Arial Narrow", sans-serif;
+  --font-body: "Inter", -apple-system, "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 40px;
+}
+.wrap { max-width: 560px; margin: 0 auto; display: grid; gap: 22px; }
+h1 {
+  font-family: var(--font-display); font-weight: 700; font-size: 44px; line-height: 1;
+  margin: 0; text-wrap: balance;
+}
+.lead { color: var(--muted); margin: 6px 0 0; }
+.open {
+  display: flex; align-items: center; justify-content: center; min-height: 60px;
+  background: var(--brass); color: var(--on-brass); text-decoration: none;
+  font-weight: 600; font-size: 18px; border-radius: 12px;
+}
+.open:focus-visible, button:focus-visible { outline: 3px solid var(--brass); outline-offset: 3px; }
+.url-row { display: flex; gap: 8px; align-items: stretch; }
+.url {
+  flex: 1; min-width: 0; padding: 12px 14px; border-radius: 10px;
+  background: var(--surface); border: 1px solid var(--line);
+  font-size: 15px; overflow-wrap: anywhere; user-select: all;
+}
+.copy {
+  font: inherit; font-weight: 600; font-size: 15px; color: var(--brass);
+  background: transparent; border: 1px solid var(--line); border-radius: 10px;
+  padding: 0 16px; cursor: pointer; min-height: 48px;
+}
+h2 { font-family: var(--font-display); font-weight: 600; font-size: 26px; line-height: 1.1; margin: 0 0 10px; }
+.share { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; }
+.qr { background: #fff; padding: 10px; border-radius: 10px; width: 156px; height: 156px; display: grid; place-items: center; }
+.qr img, .qr svg { width: 136px; height: 136px; display: block; }
+.share p { margin: 0; color: var(--muted); }
+ol { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+ol b { color: var(--text); }
+.note { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 16px; margin: 0; }
+@media (max-width: 440px) { .share { grid-template-columns: 1fr; justify-items: start; } }
+</style>
+
+<main class="wrap">
+  <header>
+    <h1>Ammo Tracker</h1>
+    <p class="lead">Munitionsbestand und Training. Alle Daten bleiben auf dem Handy.</p>
+  </header>
+
+  <a class="open" href="https://dwal1n.github.io/ammo-tracker/" target="_blank" rel="noopener">App öffnen</a>
+
+  <div class="url-row">
+    <div class="url" id="url">https://dwal1n.github.io/ammo-tracker/</div>
+    <button class="copy" id="copy" type="button">Kopieren</button>
+  </div>
+
+  <section class="share" aria-labelledby="share-h">
+    <div class="qr" id="qr" aria-label="QR-Code zur App"></div>
+    <div>
+      <h2 id="share-h">Weitergeben</h2>
+      <p>Dein Kumpel scannt den Code mit der iPhone-Kamera. Er bekommt eine leere App mit seinen eigenen Daten und sieht nichts von deinem Bestand.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="install-h">
+    <h2 id="install-h">Auf dem iPhone installieren</h2>
+    <ol>
+      <li>Oben auf <b>Kopieren</b> tippen, die <b>Safari-App</b> öffnen und die Adresse dort einfügen. Der Knopf „App öffnen“ startet einen eingebauten Browser, der nicht installieren kann.</li>
+      <li>In Safari auf das <b>Teilen-Symbol</b> tippen (eventuell hinter „…“), ganz unten <b>Mehr</b> antippen und <b>Zum Home-Bildschirm</b> wählen.</li>
+      <li>Ab jetzt über das Symbol <b>Munition</b> starten. Die App läuft dann auch ohne Netz.</li>
+    </ol>
+  </section>
+
+  <p class="note">Daten sichern: in der App unter Mehr, Datensicherung. Wird die App vom Home-Bildschirm gelöscht, sind ihre Daten weg.</p>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+  const URL_APP = 'https://dwal1n.github.io/ammo-tracker/';
+  try {
+    const q = qrcode(0, 'M');
+    q.addData(URL_APP);
+    q.make();
+    document.getElementById('qr').innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+  } catch (e) {
+    document.querySelector('.share .qr').hidden = true;
+  }
+  const btn = document.getElementById('copy');
+  btn.addEventListener('click', () => {
+    navigator.clipboard.writeText(URL_APP).then(() => {
+      btn.textContent = 'Kopiert';
+      setTimeout(() => { btn.textContent = 'Kopieren'; }, 1800);
+    }).catch(() => {
+      const r = document.createRange();
+      r.selectNodeContents(document.getElementById('url'));
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+    });
+  });
+</script>
