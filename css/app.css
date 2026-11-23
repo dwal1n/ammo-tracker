@@ -1,0 +1,220 @@
+/* Ammo Tracker – Gestaltung
+   Brünierter Stahl als Grund, Messing als einziger Akzent, Signalrot nur für Warnungen.
+   Schrift: DIN Condensed (auf iOS vorinstalliert) für Kaliber und Zahlen, Systemschrift für Text. */
+
+:root {
+  --bg: #1a2027;
+  --surface: #222a32;
+  --surface-2: #2b353f;
+  --line: #36424e;
+  --text: #e8ebee;
+  --muted: #8e9aa6;
+  --brass: #d4a64a;
+  --brass-soft: rgba(212, 166, 74, 0.14);
+  --on-brass: #1a2027;
+  --alert: #e5533d;
+  --alert-soft: rgba(229, 83, 61, 0.14);
+  --ok: #7fae8a;
+
+  --font-label: "DIN Condensed", "DIN Alternate", "Bahnschrift", "Arial Narrow", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+
+  --r-s: 6px;
+  --r-m: 12px;
+  --r-l: 20px;
+  --tap: 52px;
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #eef0f2;
+  --surface: #ffffff;
+  --surface-2: #e3e7eb;
+  --line: #cfd6dd;
+  --text: #1a2027;
+  --muted: #5d6a77;
+  --brass: #9a7224;
+  --brass-soft: rgba(154, 114, 36, 0.12);
+  --on-brass: #ffffff;
+  --alert: #c23b26;
+  --alert-soft: rgba(194, 59, 38, 0.1);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.label {
+  font-family: var(--font-label);
+  font-stretch: condensed;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.num {
+  font-family: var(--font-label);
+  font-stretch: condensed;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.muted { color: var(--muted); }
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  min-height: var(--tap);
+  border-radius: var(--r-m);
+}
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+  outline: 3px solid var(--brass);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--brass);
+  color: var(--on-brass);
+  font-weight: 650;
+  padding: 0 22px;
+}
+.btn-secondary {
+  background: var(--surface-2);
+  padding: 0 18px;
+}
+
+/* Patronenparade: Kaliber im echten Größenverhältnis auf einem Brett */
+.parade {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 20px 18px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  background:
+    linear-gradient(to bottom, transparent calc(100% - 10px), #11161b calc(100% - 10px));
+  border-bottom: 1px solid var(--line);
+}
+.parade::-webkit-scrollbar { display: none; }
+.parade-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding-bottom: 18px;
+  position: relative;
+}
+.parade-item .num { font-size: 20px; }
+.parade-item .cap { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.parade-item.low .num { color: var(--alert); }
+
+/* Bestandsliste */
+.stock-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.stock-row .thumb { display: flex; justify-content: center; align-items: flex-end; height: 64px; }
+.stock-row .name { font-size: 26px; }
+.stock-row .total { font-size: 30px; text-align: right; }
+.stock-row .total small { display: block; font-family: var(--font-body); font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 4px; }
+.stock-row.low .total { color: var(--alert); }
+.loads { grid-column: 2 / 4; display: grid; gap: 4px; margin-top: 2px; }
+.load {
+  display: grid;
+  grid-template-columns: 1fr auto 64px;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--muted);
+}
+.load .q { color: var(--text); font-variant-numeric: tabular-nums; text-align: right; }
+.load .p { text-align: right; font-variant-numeric: tabular-nums; }
+
+.badge-low {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 7px 2px;
+  border-radius: var(--r-s);
+  background: var(--alert-soft);
+  color: var(--alert);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+/* Training */
+.counter {
+  text-align: center;
+  padding: 26px 18px 18px;
+}
+.counter .num { font-size: 96px; color: var(--brass); }
+.counter .sub { margin-top: 8px; color: var(--muted); font-size: 15px; }
+
+.chip-row { display: flex; gap: 10px; padding: 0 18px; }
+.chip {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-m);
+  padding: 8px 12px;
+  min-height: var(--tap);
+  text-align: left;
+  font-size: 14px;
+}
+.chip b { display: block; font-size: 16px; }
+
+.quick {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 18px;
+}
+.quick button {
+  min-height: 72px;
+  background: var(--surface-2);
+  font-family: var(--font-label);
+  font-stretch: condensed;
+  font-weight: 700;
+  font-size: 34px;
+}
+.quick button.other { font-family: var(--font-body); font-size: 15px; font-weight: 600; }
+
+.strings { margin: 0 18px; border-top: 1px solid var(--line); }
+.string {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+}
+.string .n { color: var(--muted); font-variant-numeric: tabular-nums; }
+.string .num { font-size: 24px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
