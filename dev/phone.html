@@ -11,5 +11,7 @@
 </head>
 <body>
 <figure><iframe id="phone" src="../index.html" width="390" height="844" title="iPhone"></iframe><figcaption>iPhone 390 × 844</figcaption></figure>
+<figure class="ipad" hidden><div style="width:492px;height:708px;overflow:hidden"><iframe id="ipad" src="about:blank" width="820" height="1180" title="iPad" style="transform:scale(.6);transform-origin:0 0"></iframe></div><figcaption>iPad 820 × 1180 (verkleinert)</figcaption></figure>
+<script>if (location.hash === '#ipad') { document.querySelector('.ipad').hidden = false; document.getElementById('ipad').src = '../index.html'; }</script>
 </body>
 </html>

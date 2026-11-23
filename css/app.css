@@ -487,3 +487,6 @@ dialog.sheet[open]::backdrop { animation: fade-in .2s ease-out; }
 }
 .toast button { min-height: 32px; color: var(--brass); font-weight: 700; padding: 0 4px; }
 :root[data-theme="light"] .toast button { color: #f1c66d; }
+
+/* iPad: Training und Einstellungen als ruhige Spalte */
+#view[data-view="training"], #view[data-view="more"] { max-width: 620px; }
