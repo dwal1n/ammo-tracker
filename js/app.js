@@ -96,7 +96,14 @@ async function start() {
   initKeyboard();
   // Läuft ein Training, direkt dorthin
   if (S.activeSession()) S.state.tab = 'training';
+  // Rückkehr aus dem Handbuch: direkt zu „Mehr“, beim Abschnitt Handbuch
+  const fromManual = location.hash === '#mehr';
+  if (fromManual) {
+    if (!S.activeSession()) S.state.tab = 'more';
+    window.history.replaceState(null, '', location.pathname + location.search); // „history“ ist hier das Verlauf-Modul
+  }
   render();
+  if (fromManual && S.state.tab === 'more') document.getElementById('manual')?.scrollIntoView({ block: 'center' });
   // Browser bitten, die Daten nicht automatisch zu löschen
   navigator.storage?.persist?.().catch(() => {});
   if ('serviceWorker' in navigator && location.protocol === 'https:') {

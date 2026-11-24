@@ -66,7 +66,7 @@ export function render() {
     ${custom.length ? `<div class="cal-list">${custom.map((c) => `<button class="cal-row" data-action="editCaliber" data-id="${c.id}">${S.cart(c, { height: 44 })}<span>${esc(c.name)}<small>${FAMILY_LABELS[c.family]}</small></span></button>`).join('')}</div>` : ''}
     <button class="btn-secondary" data-action="newCaliber">Eigenes Kaliber anlegen</button>
   </section>
-  <section class="set">
+  <section class="set" id="manual">
     <h2 class="sub-head">Handbuch</h2>
     <p class="muted">Alle Funktionen Schritt für Schritt mit Bildern, dazu eine Kurzübersicht für den Stand. Funktioniert auch ohne Empfang.</p>
     <a class="btn-secondary btn-link" href="./handbuch/handbuch.html">Handbuch öffnen</a>
