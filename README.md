@@ -13,7 +13,7 @@ Nach der Installation lädt die App nichts mehr aus dem Internet und darf techni
 - Training am Stand: starten, nach jedem Durchgang die Anzahl antippen, beenden. Erst dann wird vom Bestand abgezogen
 - Einkäufe mit Preis, daraus Kosten pro Schuss und Wert des Bestands
 - Waffen mit Schusszähler und Erinnerung an die Wartung
-- Warnung bei Mindestbestand
+- Warnung bei Mindestbestand, pro Kaliber (alle Sorten zusammen) oder pro Sorte
 - Verlauf mit Statistik (Schuss pro Monat, Kosten, meistgeschossene Kaliber)
 - Patronenbilder für jedes Kaliber, realistisch oder als technische Zeichnung
 - Sicherung als Datei und Abgleich zwischen iPhone und iPad
@@ -56,6 +56,10 @@ Gelernte Packungen stehen unter **Mehr → Gelernte Packungen** und lassen sich 
 ## Bestand korrigieren
 
 Im **Bestand** auf eine Sorte tippen. Dort gibt es **Einkauf eintragen** (Menge kommt dazu) und **Bestand korrigieren** (die tatsächlich gezählte Menge eintragen, die App gleicht aus). Fehlbuchungen lassen sich im **Verlauf** antippen, ändern oder löschen.
+
+## Mindestbestand
+
+Im **Bestand** auf den Kalibernamen tippen (z. B. „.308 Win“) und eine Zahl eintragen. Die App vergleicht sie mit der Gesamtzahl aller Sorten dieses Kalibers, egal von welchem Hersteller. Neben der Gesamtzahl steht dann „min. 500“, fällt die Summe darunter, wird das Kaliber rot markiert. Zusätzlich lässt sich unter **Sorte bearbeiten** eine Grenze für eine einzelne Sorte setzen. Leeres Feld heißt: keine Warnung.
 
 ## Training
 
