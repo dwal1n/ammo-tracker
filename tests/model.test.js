@@ -64,6 +64,14 @@ test('Mindestbestand-Warnung', () => {
   assert.equal(isLow(loads[1], 0), false); // 0 = keine Warnung
 });
 
+test('Mindestbestand je Kaliber zählt alle Sorten zusammen', () => {
+  const totals = caliberTotals({ loads, purchases, adjustments, sessions });
+  const nine = totals.get('c-9luger');
+  assert.equal(isLow({ id: 'c-9luger', minStock: nine + 1 }, nine), true);
+  assert.equal(isLow({ id: 'c-9luger', minStock: nine }, nine), false);
+  assert.equal(isLow({ id: 'c-9luger' }, 0), false); // ohne Wert keine Warnung
+});
+
 test('Schusszähler der Waffe: Startwert + abgeschlossene Durchgänge', () => {
   assert.equal(firearmCount({ id: 'f1', startCount: 2000 }, sessions), 2100);
   assert.equal(firearmCount({ id: 'f2' }, sessions), 150);

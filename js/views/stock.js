@@ -33,7 +33,9 @@ export function render() {
     .filter(Boolean)
     .sort((a, b) => (totals.get(b.id) || 0) - (totals.get(a.id) || 0));
 
-  const lowCal = (c) => loads.some((l) => l.caliberId === c.id && isLow(l, st.get(l.id) || 0));
+  // Warnung, wenn die Gesamtzahl unter den Kaliber-Mindestbestand fällt oder eine Sorte unter ihren eigenen
+  const lowCal = (c) => isLow(c, totals.get(c.id) || 0)
+    || loads.some((l) => l.caliberId === c.id && isLow(l, st.get(l.id) || 0));
 
   const parade = `<div class="parade" aria-label="Kaliber im Größenvergleich">${cals.map((c) => {
     const first = loads.find((l) => l.caliberId === c.id);
@@ -49,8 +51,8 @@ export function render() {
     const low = lowCal(c);
     return `<section class="stock-row${low ? ' low' : ''}" id="cal-${c.id}">
       <div class="thumb">${S.cart(c, { height: 64 }, ls[0])}</div>
-      <div class="label name">${esc(c.name)}${low ? `<span class="badge-low">${ICONS.warn}Mindestbestand</span>` : ''}</div>
-      <div class="num total"><span data-cal-total="${c.id}">${fmt(t)}</span><small>Schuss</small></div>
+      <button class="label name" data-action="editCalMin" data-id="${c.id}" aria-label="Mindestbestand für ${esc(c.name)} festlegen">${esc(c.name)}${low ? `<span class="badge-low">${ICONS.warn}Mindestbestand</span>` : ''}</button>
+      <div class="num total"><span data-cal-total="${c.id}">${fmt(t)}</span><small>Schuss${c.minStock > 0 ? `, min. ${fmt(c.minStock)}` : ''}</small></div>
       <div class="loads">${ls.map((l) => {
         const q = st.get(l.id) || 0;
         const p = S.price(l.id);
@@ -89,13 +91,13 @@ export function mount(root) {
       countUp(el, old, q);
       flash(el?.closest('.load'));
       const l = S.load(id);
-      if (l && isLow(l, q)) blink(root.querySelector(`#cal-${CSS.escape(l.caliberId)} .badge-low`));
       // Kaliber-Summe
       if (l) {
         const tEl = root.querySelector(`[data-cal-total="${CSS.escape(l.caliberId)}"]`);
         const sumOld = S.state.loads.filter((x) => x.caliberId === l.caliberId && !x.archived).reduce((a, x) => a + (before.get(x.id) ?? now.get(x.id) ?? 0), 0);
         const sumNew = S.state.loads.filter((x) => x.caliberId === l.caliberId && !x.archived).reduce((a, x) => a + (now.get(x.id) || 0), 0);
         countUp(tEl, sumOld, sumNew);
+        if (isLow(l, q) || isLow(S.caliber(l.caliberId) || {}, sumNew)) blink(root.querySelector(`#cal-${CSS.escape(l.caliberId)} .badge-low`));
       }
     }
   }
@@ -120,7 +122,7 @@ function loadFields(l = {}, isNew = false) {
     { name: 'grain', label: 'Geschossgewicht (grain)', type: 'number', inputmode: 'decimal', value: l.grain ?? '', placeholder: 'optional' },
     { name: 'bulletType', label: 'Geschossform für das Bild', type: 'select', options: BULLET_OPTS, value: l.bulletType || '' },
     { name: 'caseColor', label: 'Hülse für das Bild', type: 'select', options: CASE_OPTS, value: l.caseColor || '' },
-    { name: 'minStock', label: 'Mindestbestand', type: 'number', value: l.minStock || '', placeholder: 'leer = keine Warnung', hint: 'Fällt der Bestand darunter, wird die Sorte rot markiert.' },
+    { name: 'minStock', label: 'Mindestbestand dieser Sorte', type: 'number', value: l.minStock || '', placeholder: 'leer = keine Warnung', hint: 'Fällt der Bestand dieser Sorte darunter, wird sie rot markiert. Für die Gesamtzahl aller Sorten eines Kalibers in der Bestandsliste auf den Kalibernamen tippen.' },
   ];
   if (isNew) {
     f.push(
@@ -254,8 +256,28 @@ async function openLoad(l) {
   if (r?.action === 'edit') return editLoad(l);
 }
 
+// Mindestbestand für ein ganzes Kaliber (Summe aller Sorten, egal von welchem Hersteller)
+async function editCaliberMin(c) {
+  if (!c) return;
+  const total = caliberTotals({ ...S.state, loads: S.state.loads.filter((l) => !l.archived) }).get(c.id) || 0;
+  const r = await sheet({
+    title: `Mindestbestand ${c.name}`,
+    intro: `<p class="sheet-text">Du hast insgesamt <b>${fmt(total)}</b> Patronen ${esc(c.name)}, über alle Sorten und Hersteller zusammen.</p>`,
+    fields: [
+      { name: 'minStock', label: 'Mindestbestand (alle Sorten zusammen)', type: 'number', value: c.minStock || '', placeholder: 'leer = keine Warnung', autofocus: true,
+        hint: 'Fällt die Gesamtzahl darunter, wird das Kaliber rot markiert.' },
+    ],
+    submit: 'Sichern',
+  });
+  if (!r) return;
+  await S.save('calibers', { ...c, minStock: r.values.minStock || 0 });
+  toast(r.values.minStock ? `Mindestbestand ${fmt(r.values.minStock)} gesetzt` : 'Mindestbestand entfernt');
+  S.render();
+}
+
 export const actions = {
   newLoad: () => editLoad(null),
+  editCalMin: (el) => editCaliberMin(S.caliber(el.dataset.id)),
   openLoad: (el) => openLoad(S.load(el.dataset.id)),
   scrollTo: (el) => document.getElementById(`cal-${el.dataset.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
   goBackup: () => { S.state.tab = 'more'; S.render(); },

@@ -134,7 +134,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   border-bottom: 1px solid var(--line);
 }
 .stock-row .thumb { display: flex; justify-content: center; align-items: flex-end; height: 64px; }
-.stock-row .name { font-size: 26px; }
+.stock-row .name { font-size: 26px; text-align: left; padding: 0; justify-content: flex-start; }
 .stock-row .total { font-size: 30px; text-align: right; }
 .stock-row .total small { display: block; font-family: var(--font-body); font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 4px; }
 .stock-row.low .total { color: var(--alert); }
