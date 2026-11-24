@@ -99,4 +99,5 @@ Reines HTML, CSS und JavaScript ohne Build-Schritt. Einzige Fremdbibliothek ist 
 - Tests: `npm test`
 - Vorschauseiten neu bauen: `node dev/build-preview.mjs` und `node dev/build-varianten.mjs`
 - App-Icons neu bauen: `node dev/build-icons.mjs` (nutzt den installierten Edge oder Chrome)
+- Handbuch neu bauen: `node dev/build-handbuch.mjs` (Bildschirmfotos mit Beispieldaten nach `handbuch/img/`, dann PDF aus `handbuch/handbuch.html`; nur PDF: `… pdf`, Seitenbilder zur Kontrolle: `… vorschau`). Der lokale Server muss laufen
 - Nach Änderungen an App-Dateien die Nummer in `js/version.js` und `VERSION` in `sw.js` gemeinsam erhöhen, damit installierte Apps die neue Fassung laden (ein Test prüft, dass beide passen)

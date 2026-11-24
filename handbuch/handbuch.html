@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Ammo Tracker Handbuch</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Handbuch im Stil der App. PDF bauen: node dev/build-handbuch.mjs pdf -->
+<style>
+:root {
+  --bg: #1a2027;
+  --surface: #222a32;
+  --surface-2: #2b353f;
+  --line: #36424e;
+  --text: #e8ebee;
+  --muted: #9aa6b2;
+  --brass: #d4a64a;
+  --brass-soft: rgba(212, 166, 74, 0.14);
+  --alert: #e5533d;
+  --font-label: "DIN Condensed", "DIN Alternate", "Bahnschrift", "Arial Narrow", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+@page { size: A4; margin: 0; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: #0d1115;
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 10pt;
+  line-height: 1.5;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Seiten */
+.page {
+  width: 210mm;
+  height: 297mm;
+  margin: 0 auto 10mm;
+  padding: 14mm 17mm 11mm;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  page-break-after: always;
+  break-after: page;
+}
+.page:last-child { page-break-after: auto; break-after: auto; }
+@media print { body { background: none; } .page { margin: 0; } }
+
+.foot {
+  margin-top: auto;
+  padding-top: 5mm;
+  display: flex;
+  justify-content: space-between;
+  font-size: 8pt;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+}
+.foot b { font-family: var(--font-label); font-stretch: condensed; font-size: 11pt; color: var(--brass); letter-spacing: .04em; }
+
+/* Schrift */
+h1, h2, h3, .label {
+  font-family: var(--font-label);
+  font-stretch: condensed;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  margin: 0;
+}
+.chapter { display: flex; align-items: flex-end; gap: 6mm; margin-bottom: 5mm; padding-bottom: 4mm; border-bottom: 2px solid var(--brass); }
+.chapter .no { font-family: var(--font-label); font-stretch: condensed; font-weight: 700; font-size: 44pt; line-height: .8; color: var(--brass); }
+.chapter h2 { font-size: 30pt; }
+.chapter .deco { margin-left: auto; display: flex; align-items: flex-end; gap: 2mm; }
+h3 { font-size: 15pt; color: var(--text); margin: 4.4mm 0 2mm; }
+h3:first-child { margin-top: 0; }
+p { margin: 0 0 2.6mm; }
+.lead { font-size: 11.5pt; color: var(--text); }
+.muted { color: var(--muted); }
+b, strong { color: #fff; font-weight: 600; }
+.k { color: var(--brass); font-weight: 600; } /* Knopf oder Menüpunkt in der App */
+
+/* Zweispaltig: Text links, Bildschirmfoto rechts */
+.split { display: grid; grid-template-columns: 1fr 62mm; gap: 8mm; align-items: start; }
+.split.wide { grid-template-columns: 1fr 70mm; }
+.split + .split { margin-top: 6mm; }
+.phone {
+  width: 100%;
+  border-radius: 6mm;
+  border: 1.6mm solid #0b0e12;
+  outline: 1px solid var(--line);
+  background: #0b0e12;
+  display: block;
+  overflow: hidden;
+}
+.phone img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: top; }
+.phone.bottom img { object-position: bottom; }
+.phone.center img { object-position: center; }
+.cap { font-size: 8pt; color: var(--muted); margin-top: 2mm; text-align: center; }
+.shots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; margin-top: 4mm; }
+.shots.two { grid-template-columns: repeat(2, 54mm); justify-content: start; }
+
+/* Nummerierte Schritte */
+ol.steps { list-style: none; padding: 0; margin: 0 0 3mm; counter-reset: s; }
+ol.steps li { counter-increment: s; position: relative; padding-left: 10mm; margin-bottom: 2.6mm; min-height: 7mm; }
+ol.steps li::before {
+  content: counter(s);
+  position: absolute; left: 0; top: -0.3mm;
+  width: 6.6mm; height: 6.6mm; border-radius: 50%;
+  background: var(--brass); color: var(--bg);
+  font-family: var(--font-label); font-stretch: condensed; font-weight: 700; font-size: 11pt;
+  display: flex; align-items: center; justify-content: center;
+}
+ul.dots { padding: 0; margin: 0 0 3mm; list-style: none; }
+ul.dots li { position: relative; padding-left: 5mm; margin-bottom: 1.8mm; }
+ul.dots li::before { content: ""; position: absolute; left: 0.6mm; top: 2.1mm; width: 1.6mm; height: 1.6mm; background: var(--brass); transform: rotate(45deg); }
+
+/* Kästen */
+.box { background: var(--surface); border-radius: 3mm; padding: 4mm 5mm; margin: 3mm 0; }
+.box.brass { background: var(--brass-soft); border-left: 1.2mm solid var(--brass); }
+.box.alert { background: rgba(229, 83, 61, .12); border-left: 1.2mm solid var(--alert); }
+.box p:last-child, .box ul:last-child { margin-bottom: 0; }
+.box .t { font-family: var(--font-label); font-stretch: condensed; font-weight: 700; font-size: 12pt; color: var(--brass); display: block; margin-bottom: 1.2mm; letter-spacing: .02em; }
+.box.alert .t { color: var(--alert); }
+
+/* Tabellen */
+table { width: 100%; border-collapse: collapse; margin: 2mm 0 3mm; }
+th { text-align: left; font-family: var(--font-label); font-stretch: condensed; font-weight: 700; font-size: 11pt; color: var(--brass); padding: 0 3mm 2mm 0; border-bottom: 1px solid var(--line); }
+td { padding: 2.2mm 3mm 2.2mm 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; padding-right: 6mm; }
+
+/* Bereiche (Tab-Leiste) */
+.tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3mm; margin: 3mm 0 2mm; }
+.tabs div { background: var(--surface); border-radius: 3mm; padding: 3.5mm 3mm; }
+.tabs .label { color: var(--brass); font-size: 13pt; display: block; margin-bottom: 1.5mm; }
+.tabs p { font-size: 8.5pt; color: var(--muted); margin: 0; line-height: 1.4; }
+
+/* Titelseite */
+.cover { padding: 0; background: radial-gradient(circle at 50% 30%, #34404b 0%, #1f262e 55%, #141a20 100%); }
+.cover .top { padding: 26mm 20mm 0; }
+.cover .kicker { font-family: var(--font-label); font-stretch: condensed; font-weight: 700; color: var(--brass); letter-spacing: .3em; font-size: 12pt; }
+.cover h1 { font-size: 66pt; margin-top: 4mm; }
+.cover .sub { font-size: 14pt; color: var(--muted); margin-top: 5mm; max-width: 130mm; }
+.cover .parade { position: absolute; left: 0; right: 0; top: 118mm; display: flex; justify-content: center; align-items: flex-end; height: 82mm; }
+.cover .parade .cart { display: flex; flex-direction: column; align-items: center; width: 19mm; }
+.cover .shelf { position: absolute; left: 0; right: 0; top: 200mm; height: 1.6mm; background: linear-gradient(#d4a64a, #8a6420); }
+.cover .shade { position: absolute; left: 0; right: 0; top: 201.6mm; bottom: 0; background: linear-gradient(#0d1115, #151b21); }
+.cover .names { position: absolute; left: 0; right: 0; top: 205mm; display: flex; justify-content: center; }
+.cover .names span { width: 19mm; font-family: var(--font-label); font-stretch: condensed; font-weight: 700; font-size: 10pt; color: var(--muted); text-align: center; }
+.cover .bottom { position: absolute; left: 20mm; right: 20mm; bottom: 18mm; display: flex; justify-content: space-between; align-items: flex-end; }
+.cover .bottom .v { font-family: var(--font-label); font-stretch: condensed; font-weight: 700; font-size: 16pt; color: var(--brass); }
+.cover .bottom .url { font-size: 10pt; color: var(--text); text-align: right; }
+.cover .bottom .url span { display: block; color: var(--muted); font-size: 8.5pt; }
+
+/* Inhaltsübersicht auf Seite 2 */
+.toc { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6mm 8mm; margin-top: 2mm; }
+.toc div { display: flex; gap: 3mm; align-items: baseline; border-bottom: 1px solid var(--line); padding-bottom: 1.4mm; }
+.toc .n { font-family: var(--font-label); font-stretch: condensed; font-weight: 700; color: var(--brass); font-size: 12pt; width: 6mm; }
+.toc .s { margin-left: auto; color: var(--muted); font-size: 9pt; }
+
+/* Fragen */
+.faq { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm 7mm; }
+.faq div { break-inside: avoid; }
+.faq .q { font-family: var(--font-label); font-stretch: condensed; font-weight: 700; font-size: 12.5pt; color: var(--brass); margin-bottom: 1.2mm; line-height: 1.15; }
+.faq p { font-size: 9.3pt; }
+
+/* Kurzübersicht für den Stand: hell, damit sie sich gut ausdrucken lässt */
+.page.light { background: #fff; color: #1a2027; }
+.light .muted, .light .cap { color: #5d6a77; }
+.light b, .light strong, .light td:first-child { color: #1a2027; }
+.light .chapter { border-color: #9a7224; }
+.light .chapter .no, .light .k, .light th, .light .box .t { color: #9a7224; }
+.light .box { background: #f2f0ea; }
+.light .box.brass { background: #f8efd9; border-color: #9a7224; }
+.light td, .light th, .light .foot { border-color: #cfd6dd; }
+.light .foot b { color: #9a7224; }
+.light ol.steps li::before { background: #9a7224; color: #fff; }
+.light ul.dots li::before { background: #9a7224; }
+.quick { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm 8mm; }
+.quick .box { margin: 0; }
+.fill th { white-space: nowrap; }
+.fill td { height: 10mm; }
+.fill td:first-child { width: 32%; }
+.cut { margin-top: 6mm; border-top: 1px dashed #9aa6b2; padding-top: 2mm; font-size: 8pt; color: #5d6a77; text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- 1 Titelseite -->
+<section class="page cover">
+  <div class="top">
+    <div class="kicker">HANDBUCH</div>
+    <h1>Ammo Tracker</h1>
+    <p class="sub">Munitionsbestand und Training für Sportschützen. Auf iPhone und iPad, ohne Konto, ohne Cloud.</p>
+  </div>
+  <div class="parade" id="parade"></div>
+  <div class="shelf"></div>
+  <div class="shade"></div>
+  <div class="bottom">
+    <div class="v">Version 11<br><span class="muted" style="font-size:11pt">November 2026</span></div>
+    <div class="url">dwal1n.github.io/ammo-tracker<span>in Safari öffnen und zum Home-Bildschirm hinzufügen</span></div>
+  </div>
+</section>
+
+<!-- 2 Worum es geht, Installation -->
+<section class="page">
+  <div class="chapter"><span class="no">1</span><h2>Worum es geht</h2><span class="deco" data-carts="c-9luger" data-h="70"></span></div>
+  <p class="lead">Ammo Tracker zeigt dir jederzeit, wie viel Munition du von welcher Sorte hast, und zieht beim Training ab, was du verschossen hast. Dazu kommen Einkäufe mit Preisen, ein Schusszähler pro Waffe und eine Statistik über deine Trainings.</p>
+  <p>Die App läuft auf iPhone und iPad und braucht nach der Installation kein Internet. Es gibt kein Konto, keine Cloud, keine Werbung und keine Statistik-Dienste. Alles, was du einträgst, bleibt auf deinem Gerät. Nach außen geht nur, was du selbst als Sicherung verschickst.</p>
+
+  <h3>Installation</h3>
+  <p>Die App wird über Safari auf den Home-Bildschirm gelegt, einen App Store braucht es nicht.</p>
+  <ol class="steps">
+    <li>Die Adresse <b>dwal1n.github.io/ammo-tracker</b> in der <span class="k">Safari-App</span> öffnen. Andere Browser und die eingebauten Browser anderer Apps können nicht installieren.</li>
+    <li>Auf das <span class="k">Teilen-Symbol</span> tippen (Quadrat mit Pfeil nach oben, je nach iOS hinter den drei Punkten).</li>
+    <li>In der Liste ganz unten auf <span class="k">Mehr</span> tippen und <span class="k">Zum Home-Bildschirm</span> wählen. „Als Web-App öffnen“ eingeschaltet lassen, dann <span class="k">Hinzufügen</span>.</li>
+    <li>Ab jetzt die App immer über das Symbol <span class="k">Munition</span> starten.</li>
+  </ol>
+  <div class="box brass"><span class="t">Kurzer Test</span>Flugmodus an, App öffnen. Startet sie, läuft sie auch am Stand ohne Empfang.</div>
+  <div class="box alert"><span class="t">Wichtig</span>Safari und die installierte App haben getrennte Speicher. Was du in Safari einträgst, siehst du in der App nicht. Tipp: Über „Aktionen bearbeiten“ im Teilen-Menü lässt sich „Zum Home-Bildschirm“ dauerhaft nach oben holen.</div>
+
+  <h3>Inhalt</h3>
+  <div class="toc">
+    <div><span class="n">1</span>Worum es geht, Installation<span class="s">2</span></div>
+    <div><span class="n">6</span>Training am Stand<span class="s">7</span></div>
+    <div><span class="n">2</span>Die fünf Bereiche, erste Schritte<span class="s">3</span></div>
+    <div><span class="n">7</span>Waffen, Verlauf und Statistik<span class="s">8</span></div>
+    <div><span class="n">3</span>Bestand<span class="s">4</span></div>
+    <div><span class="n">8</span>Einstellungen, Sicherung und Abgleich<span class="s">9</span></div>
+    <div><span class="n">4</span>Mindestbestand<span class="s">5</span></div>
+    <div><span class="n">9</span>Updates und häufige Fragen<span class="s">10</span></div>
+    <div><span class="n">5</span>Packungen scannen<span class="s">6</span></div>
+    <div><span class="n">✓</span>Kurzübersicht für den Stand<span class="s">11</span></div>
+  </div>
+  <div class="foot"><b>AMMO TRACKER</b><span>2</span></div>
+</section>
+
+<!-- 3 Bereiche, Erste Schritte -->
+<section class="page">
+  <div class="chapter"><span class="no">2</span><h2>Die fünf Bereiche</h2><span class="deco" data-carts="c-22lr,c-9luger,c-308" data-h="70"></span></div>
+  <p>Unten in der App sitzt eine Leiste mit fünf Bereichen. Läuft gerade ein Training, zeigt ein roter Punkt am Training-Symbol das an.</p>
+  <div class="tabs">
+    <div><span class="label">Bestand</span><p>Munition nach Kaliber und Sorte, Packungen scannen, Einkäufe und Korrekturen</p></div>
+    <div><span class="label">Training</span><p>Am Stand Durchgänge eintragen, am Ende vom Bestand abziehen</p></div>
+    <div><span class="label">Verlauf</span><p>Statistik und alle Einträge, jeder lässt sich ändern</p></div>
+    <div><span class="label">Waffen</span><p>Schusszähler und Wartungserinnerung</p></div>
+    <div><span class="label">Mehr</span><p>Kaliber, Darstellung, Sicherung, gelernte Packungen</p></div>
+  </div>
+
+  <h3 style="margin-top:9mm">Erste Schritte</h3>
+  <p>In vier Schritten ist die App eingerichtet. Plane für die Inventur etwas Zeit ein, danach geht alles schnell.</p>
+  <ol class="steps">
+    <li><span class="k">Mehr → Meine Kaliber:</span> die Kaliber antippen, die du schießt. Danach zeigen alle Auswahllisten nur noch diese statt aller 24.</li>
+    <li><span class="k">Bestand füllen:</span> am schnellsten per Scanner (Kapitel 5). Ohne Scanner über das <span class="k">Plus</span> oben rechts im Bestand eine Sorte anlegen und dort gleich den aktuellen Bestand eintragen.</li>
+    <li><span class="k">Waffen anlegen:</span> unter <span class="k">Waffen</span> jede Waffe mit Kaliber eintragen. Beim Training schlägt die App dann die passende Munition vor.</li>
+    <li><span class="k">Sichern:</span> unter <span class="k">Mehr → Sicherung und Abgleich</span> auf <span class="k">Sicherung erstellen</span> tippen.</li>
+  </ol>
+  <div class="box alert"><span class="t">Nicht doppelt zählen</span>Eine Sorte bekommt ihren Bestand entweder beim Anlegen oder per Scan, nicht beides. Sonst zählt die Munition doppelt. Ist es doch passiert, hilft <span class="k">Bestand korrigieren</span>.</div>
+  <div class="box"><span class="t">Munition, die du schon länger hast</span>Beim Händler <span class="k">Anfangsbestand</span> wählen. Dann zählt sie in der Statistik nicht als Ausgabe, ihr Preis fließt aber in die Kosten pro Schuss ein.</div>
+  <div class="foot"><b>AMMO TRACKER</b><span>3</span></div>
+</section>
+
+<!-- 4 Bestand -->
+<section class="page">
+  <div class="chapter"><span class="no">3</span><h2>Bestand</h2><span class="deco" data-carts="c-9luger" data-h="70"></span></div>
+  <div class="split" style="grid-template-columns:1fr 56mm">
+    <div>
+      <p class="lead">Oben steht die Patronenparade: jedes Kaliber im echten Größenverhältnis mit seiner Gesamtzahl. Ein Tipp auf eine Patrone springt zum Kaliber in der Liste darunter.</p>
+      <p>In der Liste siehst du jede Sorte mit Bestand und Preis pro Schuss. Die Kaliber stehen nach Bestand sortiert, das größte zuerst.</p>
+      <h3>Neue Sorte anlegen</h3>
+      <p>Das <span class="k">Plus</span> oben rechts. Kaliber, Hersteller und Bezeichnung wählen oder eintippen, Vorschläge erscheinen unter dem Feld. Geschossgewicht, Geschossform und Hülsenfarbe sind optional, die beiden letzten bestimmen nur das Bild.</p>
+      <h3>Preis pro Schuss</h3>
+      <p>Die App rechnet den Durchschnitt aller Einkäufe mit Preis. Ohne Preis steht dort nichts, die Sorte funktioniert trotzdem.</p>
+      <div class="box"><span class="t">Erinnerung</span>Ist die letzte Sicherung älter als 30 Tage, erscheint oben im Bestand ein Hinweis.</div>
+    </div>
+    <div><div class="phone" style="aspect-ratio:780/1850"><img src="img/bestand.png" alt="Bestand mit Patronenparade"></div><div class="cap">Bestand mit drei Kalibern</div></div>
+  </div>
+  <div class="split" style="grid-template-columns:1fr 50mm">
+    <div>
+      <h3>Eine Sorte antippen</h3>
+      <p>öffnet ihre Übersicht mit Bestand, Preis pro Schuss, Wert und den letzten Einkäufen. Darunter drei Knöpfe:</p>
+      <ul class="dots">
+        <li><span class="k">Einkauf eintragen:</span> Menge, Preis, Händler und Datum. Die Menge kommt zum Bestand dazu.</li>
+        <li><span class="k">Bestand korrigieren:</span> die tatsächlich gezählte Menge eintragen. Die App gleicht den Unterschied aus, z. B. nach einer Inventur.</li>
+        <li><span class="k">Sorte bearbeiten:</span> Angaben ändern, Sorte ausblenden (aufgebraucht, bleibt im Verlauf) oder löschen.</li>
+      </ul>
+    </div>
+    <div><div class="phone bottom" style="aspect-ratio:780/1214"><img src="img/sorte.png" alt="Übersicht einer Sorte"></div><div class="cap">Übersicht einer Sorte</div></div>
+  </div>
+  <div class="foot"><b>AMMO TRACKER</b><span>4</span></div>
+</section>
+
+<!-- 5 Mindestbestand -->
+<section class="page">
+  <div class="chapter"><span class="no">4</span><h2>Mindestbestand</h2><span class="deco" data-carts="c-308" data-h="80" data-style="line"></span></div>
+  <p class="lead">Die App warnt, wenn die Munition knapp wird. Am praktischsten ist die Grenze für ein ganzes Kaliber: Dann zählt die Gesamtzahl, egal von welchem Hersteller die Patronen stammen.</p>
+  <div class="split wide">
+    <div>
+      <h3>Für ein Kaliber</h3>
+      <ol class="steps">
+        <li>Im <span class="k">Bestand</span> auf den Kalibernamen tippen, z. B. „.308 Win“.</li>
+        <li>Den Mindestbestand eintragen, z. B. 500, und <span class="k">Sichern</span>.</li>
+      </ol>
+      <p>Neben der Gesamtzahl steht jetzt „min. 500“. Fällt die Summe aller Sorten darunter, werden die Zahl und die Patrone in der Parade rot, und neben dem Namen erscheint der Hinweis <b style="color:var(--alert)">Mindestbestand</b>.</p>
+      <div class="box brass"><span class="t">Beispiel</span>150 Geco und 100 Norma ergeben 250 Patronen .308 Win. Das liegt unter 500, also wird das Kaliber rot, obwohl für keine einzelne Sorte eine Grenze gesetzt ist.</div>
+      <h3>Für eine Sorte</h3>
+      <p>Unter <span class="k">Sorte bearbeiten</span> lässt sich zusätzlich eine Grenze für eine einzelne Sorte setzen. Fällt sie darunter, wird diese Sorte rot markiert.</p>
+      <p>Wer nur die Gesamtzahl im Blick haben will, lässt das Feld bei den Sorten leer. Ein leeres Feld heißt immer: keine Warnung.</p>
+    </div>
+    <div><div class="phone"><img src="img/mindestbestand.png" alt="Mindestbestand für .308 Win eintragen"></div><div class="cap">Tipp auf den Kalibernamen</div></div>
+  </div>
+  <div style="margin-top:3mm">
+    <div class="phone" style="aspect-ratio:780/420; width:88mm; border-radius:4mm"><img src="img/bestand.png" alt="Rote Zeile für .308 Win im Bestand" style="object-position:0 83.75%"></div>
+    <div class="cap" style="text-align:left">So sieht die Warnung im Bestand aus: 250 von mindestens 500, über beide Sorten gerechnet.</div>
+  </div>
+  <div class="foot"><b>AMMO TRACKER</b><span>5</span></div>
+</section>
+
+<!-- 6 Scannen -->
+<section class="page">
+  <div class="chapter"><span class="no">5</span><h2>Packungen scannen</h2><span class="deco" data-carts="c-9luger" data-h="70"></span></div>
+  <p class="lead">Mit dem Scanner buchst du Packungen per Strichcode. Jede Packungsart lernt die App einmal, danach reicht ein Scan und die Anzahl.</p>
+  <div class="shots">
+    <div><div class="phone center" style="aspect-ratio:780/1014"><img src="img/scanner.png" alt="Scanner"></div><div class="cap">Strichcode in den Rahmen halten</div></div>
+    <div><div class="phone bottom" style="aspect-ratio:780/1014"><img src="img/neue-packung.png" alt="Neue Packung zuordnen"></div><div class="cap">Beim ersten Mal: Sorte zuordnen</div></div>
+    <div><div class="phone" style="aspect-ratio:780/1014"><img src="img/buchen.png" alt="Packungen buchen"></div><div class="cap">Danach: Anzahl eingeben, buchen</div></div>
+  </div>
+  <div class="split" style="grid-template-columns:1fr 1fr; margin-top:5mm">
+    <div>
+      <h3>Beim ersten Scan einer Packungsart</h3>
+      <ol class="steps">
+        <li>Im <span class="k">Bestand</span> oben auf das <span class="k">Strichcode-Symbol</span> tippen und den Strichcode in den Rahmen halten.</li>
+        <li>Die Sorte wählen. Gibt es sie noch nicht, <span class="k">Neue Sorte anlegen …</span> Darunter die <span class="k">Patronen pro Packung</span>, dann <span class="k">Weiter</span>.</li>
+        <li>Bei einer neuen Sorte den Bestand im Formular leer lassen und <span class="k">Anlegen</span>.</li>
+        <li>Jetzt kommt <span class="k">Packungen buchen</span>.</li>
+      </ol>
+      <h3>Bei jedem weiteren Scan</h3>
+      <p>Anzahl über 1, 5, 10, 20 oder das Feld eingeben, die App rechnet live mit. Preis und Händler sind optional und vom letzten Mal vorausgefüllt. Dann <span class="k">Buchen</span> oder <span class="k">Buchen und weiter scannen</span>.</p>
+    </div>
+    <div>
+      <h3>Besondere Fälle</h3>
+      <ul class="dots">
+        <li><span class="k">Angebrochene Packung:</span> oben auf <span class="k">Einzelne Patronen</span> umschalten, gezählte Menge eintragen. Der Preis wird anteilig gerechnet.</li>
+        <li><span class="k">QR-Code abgelehnt:</span> Manche Hersteller, etwa Magtech, drucken auf jede Packung denselben QR-Code. Dann den Strichcode scannen.</li>
+        <li><span class="k">Falsche Sorte erwischt:</span> beim Buchen auf <span class="k">Andere Sorte zuordnen</span>.</li>
+        <li><span class="k">Kamera klappt nicht:</span> <span class="k">Nummer eintippen</span> (die Ziffern unter dem Strichcode, die App prüft sie auf Tippfehler) oder <span class="k">Foto aufnehmen</span>.</li>
+      </ul>
+      <div class="box"><span class="t">Kamera-Erlaubnis</span>iOS fragt bei Web-Apps immer wieder nach der Kamera, innerhalb eines Scan-Durchgangs aber nur einmal. Eventuell hilft Einstellungen → Apps → Safari → Kamera → Erlauben. Die Bilder werden nur auf dem Handy ausgewertet und nirgends gespeichert.</div>
+    </div>
+  </div>
+  <div class="foot"><b>AMMO TRACKER</b><span>6</span></div>
+</section>
+
+<!-- Training -->
+<section class="page">
+  <div class="chapter"><span class="no">6</span><h2>Training am Stand</h2><span class="deco" data-carts="c-9luger,c-22lr" data-h="70"></span></div>
+  <p class="lead">Du trägst nach jedem Durchgang ein, was du verschossen hast. Vom Bestand abgezogen wird erst, wenn du das Training beendest.</p>
+  <div class="split" style="grid-template-columns:1fr 60mm">
+    <div>
+      <ol class="steps">
+        <li><span class="k">Training → Training starten.</span> Stand oder Verein eintragen (optional, wird gemerkt).</li>
+        <li><span class="k">Waffe und Munition wählen.</span> Die zuletzt zu dieser Waffe benutzte Sorte ist vorausgewählt.</li>
+        <li><span class="k">Nach jedem Durchgang</span> auf die Anzahl tippen: 5, 10, 15, 20, 25 oder 50. Für andere Mengen <span class="k">Andere Anzahl</span>. Der Zähler oben zählt hoch.</li>
+        <li><span class="k">Training beenden:</span> Die App zeigt Schuss und Kosten. <span class="k">Abschließen und abziehen</span> bucht alles vom Bestand ab.</li>
+      </ol>
+      <h3>Was noch geht</h3>
+      <ul class="dots">
+        <li><span class="k">Waffe oder Sorte wechseln:</span> auf die Zeile mit Waffe und Munition tippen. Rechts steht, wie viel von der Sorte noch übrig ist.</li>
+        <li><span class="k">Durchgang falsch:</span> über den Papierkorb löschen, ein Hinweis bietet <span class="k">Rückgängig</span> an.</li>
+        <li><span class="k">App zwischendurch geschlossen:</span> Das Training bleibt erhalten. Beim nächsten Öffnen landest du direkt wieder darin.</li>
+        <li><span class="k">Training verwerfen:</span> nichts wird gespeichert oder abgezogen.</li>
+        <li><span class="k">Schnell hintereinander getippt:</span> Jeder Tipp zählt.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="phone"><img src="img/training.png" alt="Laufendes Training"></div><div class="cap">Laufendes Training</div>
+      <div class="phone bottom" style="margin-top:5mm; aspect-ratio:780/800"><img src="img/training-ende.png" alt="Training beenden"></div><div class="cap">Beenden zieht vom Bestand ab</div>
+    </div>
+  </div>
+  <div class="foot"><b>AMMO TRACKER</b><span>7</span></div>
+</section>
+
+<!-- Waffen, Verlauf -->
+<section class="page">
+  <div class="chapter"><span class="no">7</span><h2>Waffen, Verlauf und Statistik</h2></div>
+  <div class="split">
+    <div>
+      <h3>Waffen</h3>
+      <p>Jede Waffe hat einen Schusszähler, der mit jedem beendeten Training wächst.</p>
+      <ul class="dots">
+        <li><span class="k">Waffe anlegen:</span> <span class="k">Waffen → Plus</span>, Bezeichnung und Kaliber eintragen.</li>
+        <li><span class="k">Schuss vor Nutzung der App:</span> Weißt du ungefähr, wie viel du mit der Waffe schon geschossen hast, trag es ein. Der Zähler rechnet von dort weiter.</li>
+        <li><span class="k">Wartung alle … Schuss:</span> Ist das Intervall erreicht, erscheint ein roter Hinweis. Nach der Wartung die Waffe antippen und <span class="k">Wartung erledigt</span>.</li>
+        <li><span class="k">Waffe löschen:</span> Trainings und Bestand bleiben unverändert.</li>
+      </ul>
+    </div>
+    <div><div class="phone" style="aspect-ratio:780/660"><img src="img/waffen.png" alt="Waffen"></div><div class="cap">Waffen mit Schusszähler</div></div>
+  </div>
+  <div class="split">
+    <div>
+      <h3>Verlauf und Statistik</h3>
+      <p>Oben stehen die Zahlen des laufenden Jahres: Schuss, Trainings, Kosten der verschossenen Munition und Ausgaben für Einkäufe. Darunter die Schuss pro Monat über zwölf Monate und die meistgeschossenen Kaliber.</p>
+      <p>Die Chronik listet alle Trainings, Einkäufe und Korrekturen, das Neueste zuerst. Ein Tipp öffnet den Eintrag:</p>
+      <ul class="dots">
+        <li><span class="k">Training:</span> alle Durchgänge ansehen oder löschen. Die Patronen kommen dann zurück in den Bestand.</li>
+        <li><span class="k">Einkauf:</span> Menge, Preis, Händler und Datum ändern oder löschen.</li>
+        <li><span class="k">Korrektur:</span> löschen.</li>
+      </ul>
+      <p class="muted">Einkäufe mit dem Händler „Anfangsbestand“ erscheinen als „Start“ und zählen nicht als Ausgabe.</p>
+    </div>
+    <div><div class="phone" style="aspect-ratio:780/1240"><img src="img/verlauf.png" alt="Verlauf"></div><div class="cap">Statistik und Chronik</div></div>
+  </div>
+  <div class="foot"><b>AMMO TRACKER</b><span>8</span></div>
+</section>
+
+<!-- Einstellungen, Sicherung -->
+<section class="page">
+  <div class="chapter"><span class="no">8</span><h2>Mehr: Einstellungen und Sicherung</h2></div>
+  <div class="split" style="grid-template-columns:1fr 54mm">
+    <div>
+      <table>
+        <tr><th>Einstellung</th><th>Wozu</th></tr>
+        <tr><td>Meine Kaliber</td><td>Nur diese erscheinen in Auswahllisten. Kaliber mit Sorte oder Waffe bleiben immer wählbar</td></tr>
+        <tr><td>Patronenbilder</td><td>Realistisch oder technische Zeichnung mit Maßen in mm</td></tr>
+        <tr><td>Erscheinungsbild</td><td>Dunkel, hell oder wie das iPhone eingestellt ist</td></tr>
+        <tr><td>Gelernte Packungen</td><td>Patronen pro Packung ändern oder Verknüpfung löschen</td></tr>
+        <tr><td>Eigene Kaliber</td><td>Fehlendes Kaliber mit Bauform und Maßen anlegen, das Bild wird daraus gezeichnet</td></tr>
+        <tr><td>Alle Daten löschen</td><td>Löscht alles auf diesem Gerät, mit zwei Rückfragen. Vorher sichern</td></tr>
+      </table>
+      <p class="muted">Ganz unten steht die Version der App mit Datum. Über der Tastatur erscheint eine Leiste mit <b>Fertig</b>, ein Tipp auf eine freie Fläche schließt die Tastatur ebenfalls.</p>
+    </div>
+    <div><div class="phone" style="aspect-ratio:780/1290"><img src="img/mehr.png" alt="Mehr"></div><div class="cap">Mehr</div></div>
+  </div>
+  <div class="split" style="grid-template-columns:1fr 54mm">
+    <div>
+      <h3>Sicherung und Abgleich</h3>
+      <p>Deine Daten liegen nur auf dem Gerät. Eine Sicherung als Datei schützt sie, falls das Handy verloren geht oder kaputt ist.</p>
+      <p><span class="k">Sicherung erstellen</span>, dann im Teilen-Menü z. B. <span class="k">In Dateien sichern</span> oder per <span class="k">AirDrop</span> verschicken. Ein Ort außerhalb des iPhones (iCloud Drive, ein anderer Rechner) ist sicherer. Nach 30 Tagen ohne Sicherung erinnert die App.</p>
+      <p><b>iPhone und iPad abgleichen</b>, ganz ohne Server:</p>
+      <ol class="steps">
+        <li>iPhone: <span class="k">Sicherung erstellen</span>, per AirDrop ans iPad.</li>
+        <li>iPad: <span class="k">Datei laden</span> und <span class="k">Zusammenführen</span>.</li>
+        <li>iPad: <span class="k">Zurückschicken</span>, auf dem iPhone ebenfalls zusammenführen.</li>
+      </ol>
+      <p class="muted"><b>Zusammenführen</b> behält alles von beiden Geräten, bei gleichem Eintrag gewinnt die neuere Änderung. <b>Alles ersetzen</b> ist nur für den Umzug auf ein neues Gerät.</p>
+    </div>
+    <div><div class="phone" style="aspect-ratio:780/840"><img src="img/sicherung.png" alt="Sicherung und Abgleich"></div><div class="cap">Sicherung und Abgleich</div></div>
+  </div>
+  <div class="foot"><b>AMMO TRACKER</b><span>9</span></div>
+</section>
+
+<!-- Updates, FAQ -->
+<section class="page">
+  <div class="chapter"><span class="no">9</span><h2>Updates und häufige Fragen</h2></div>
+  <div class="box brass"><span class="t">Updates kommen von selbst</span>
+    <ol class="steps" style="margin:2mm 0 1mm">
+      <li>App mit Internet öffnen und ein paar Sekunden offen lassen.</li>
+      <li>App ganz schließen: vom unteren Rand hochwischen, kurz halten, die App wegwischen.</li>
+      <li>App wieder öffnen. Die Version steht ganz unten unter <span class="k">Mehr</span>.</li>
+    </ol>
+    Deine Daten bleiben bei jedem Update erhalten. Die App zum Aktualisieren nie vom Home-Bildschirm löschen, sonst sind die Daten weg.
+  </div>
+  <div class="faq" style="margin-top:6mm">
+    <div><div class="q">Im Teilen-Menü fehlt „Zum Home-Bildschirm“.</div><p>Ganz unten auf Mehr tippen. Fehlt es auch dort, ist der Link nicht in Safari geöffnet, sondern im Browser einer anderen App. Adresse kopieren und in Safari einfügen.</p></div>
+    <div><div class="q">Die Munition zählt doppelt.</div><p>Vermutlich wurde beim Anlegen ein Bestand eingetragen und danach noch gescannt. Sorte antippen, Bestand korrigieren, gezählte Menge eintragen.</p></div>
+    <div><div class="q">Die Statistik zeigt zu hohe Ausgaben.</div><p>Die Inventur wurde als Einkauf gebucht. Im Verlauf die Einkäufe antippen und als Händler „Anfangsbestand“ eintragen.</p></div>
+    <div><div class="q">Ich will nur die Summe eines Kalibers überwachen.</div><p>Auf den Kalibernamen tippen und dort den Mindestbestand setzen. Die Felder bei den Sorten leer lassen.</p></div>
+    <div><div class="q">Der Scanner erkennt nichts.</div><p>Näher ran, gutes Licht, Strichcode quer in den Rahmen. Bei sehr kleinen Codes Nummer eintippen.</p></div>
+    <div><div class="q">Der QR-Code wird abgelehnt.</div><p>Der Hersteller druckt auf alle Packungen denselben QR-Code. Den Strichcode scannen.</p></div>
+    <div><div class="q">iOS fragt bei jedem Scan nach der Kamera.</div><p>Das macht iOS bei Web-Apps so. Mehrere Packungen mit „Buchen und weiter scannen“ am Stück scannen, dann fragt es nur einmal.</p></div>
+    <div><div class="q">Nach einem Update sieht alles aus wie vorher.</div><p>App mit Internet öffnen, ganz schließen, wieder öffnen. Unter Mehr prüfen, welche Version angezeigt wird.</p></div>
+    <div><div class="q">Ein Freund möchte die App auch.</div><p>Einfach die Adresse schicken. Er bekommt eine leere App mit eigenen Daten und sieht nichts von deinen.</p></div>
+    <div><div class="q">Kann jemand meine Daten sehen?</div><p>Nein. Sie liegen nur auf deinem Gerät, die App darf keine Verbindung nach außen aufbauen. Weitergegeben wird nur, was du selbst verschickst.</p></div>
+  </div>
+  <div class="foot"><b>AMMO TRACKER</b><span>10</span></div>
+</section>
+
+<!-- Kurzübersicht -->
+<section class="page light">
+  <div class="chapter"><span class="no">✓</span><h2>Kurzübersicht für den Stand</h2><span class="deco" data-carts="c-22lr,c-9luger,c-308" data-h="60"></span></div>
+  <p class="muted">Zum Ausdrucken und Einlegen in den Waffenkoffer.</p>
+  <div class="quick">
+    <div class="box brass"><span class="t">Training</span>
+      <ol class="steps" style="margin:0">
+        <li><span class="k">Training → Training starten</span></li>
+        <li>Waffe und Munition prüfen</li>
+        <li>Nach jedem Durchgang Anzahl antippen</li>
+        <li><span class="k">Training beenden → Abschließen und abziehen</span></li>
+      </ol>
+    </div>
+    <div class="box"><span class="t">Packungen buchen</span>
+      <ol class="steps" style="margin:0">
+        <li><span class="k">Bestand → Strichcode-Symbol</span></li>
+        <li>Strichcode in den Rahmen</li>
+        <li>Anzahl Packungen, <span class="k">Buchen</span></li>
+      </ol>
+    </div>
+    <div class="box"><span class="t">Wenn etwas schiefgeht</span>
+      <ul class="dots" style="margin:0">
+        <li>Durchgang falsch: Papierkorb, dann <span class="k">Rückgängig</span></li>
+        <li>Andere Waffe: Zeile mit Waffe und Munition antippen</li>
+        <li>App zu: Training läuft weiter</li>
+        <li>Bestand stimmt nicht: Sorte antippen, <span class="k">Bestand korrigieren</span></li>
+      </ul>
+    </div>
+    <div class="box"><span class="t">Gut zu wissen</span>
+      <ul class="dots" style="margin:0">
+        <li>Läuft ohne Empfang, auch im Flugmodus</li>
+        <li>Rot heißt: unter dem Mindestbestand</li>
+        <li>Mindestbestand: Kalibernamen antippen</li>
+        <li>Alle 30 Tage sichern: <span class="k">Mehr → Sicherung erstellen</span></li>
+      </ul>
+    </div>
+  </div>
+  <table class="fill" style="margin-top:7mm">
+    <tr><th>Meine Waffen</th><th>Kaliber</th><th>Munition</th><th>Mindestbestand</th></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td></tr>
+  </table>
+  <div class="cut">dwal1n.github.io/ammo-tracker · immer über das Symbol „Munition“ öffnen, nie über Safari</div>
+  <div class="foot"><b>AMMO TRACKER</b><span>11</span></div>
+</section>
+
+<script type="module">
+// Patronenbilder aus der App selbst
+import { DEFAULT_CALIBERS } from '../js/calibers.js';
+import { cartridgeSVG } from '../js/cartridge-svg.js';
+const cal = (id) => DEFAULT_CALIBERS.find((c) => c.id === id);
+
+// Titelseite: Parade im echten Größenverhältnis, Maßstab nach der längsten Patrone
+const parade = ['c-22lr', 'c-380', 'c-9luger', 'c-45acp', 'c-357', 'c-223', 'c-308', 'c-3006'];
+const short = ['.22 lfB', '9 mm kurz', '9 mm Luger', '.45 ACP', '.357 Mag.', '.223 Rem', '.308 Win', '.30-06'];
+const s = 300 / Math.max(...parade.map((id) => cal(id).dims.oal));
+document.getElementById('parade').innerHTML = parade
+  .map((id) => `<span class="cart">${cartridgeSVG(cal(id), { style: 'real', scale: s })}</span>`).join('');
+document.querySelector('.cover').insertAdjacentHTML('beforeend',
+  `<div class="names">${short.map((n) => `<span>${n}</span>`).join('')}</div>`);
+
+for (const el of document.querySelectorAll('[data-carts]')) {
+  const style = el.dataset.style || 'real';
+  el.innerHTML = el.dataset.carts.split(',')
+    .map((id) => cartridgeSVG(cal(id), { style, height: Number(el.dataset.h), dims: false })).join('');
+}
+</script>
+</body>
+</html>
