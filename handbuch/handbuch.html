@@ -198,7 +198,7 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
   <div class="shelf"></div>
   <div class="shade"></div>
   <div class="bottom">
-    <div class="v">Version 11<br><span class="muted" style="font-size:11pt">November 2026</span></div>
+    <div class="v" id="version">Version<br><span class="muted" style="font-size:11pt"></span></div>
     <div class="url">dwal1n.github.io/ammo-tracker<span>in Safari öffnen und zum Home-Bildschirm hinzufügen</span></div>
   </div>
 </section>
@@ -529,6 +529,14 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
 // Patronenbilder aus der App selbst
 import { DEFAULT_CALIBERS } from '../js/calibers.js';
 import { cartridgeSVG } from '../js/cartridge-svg.js';
+import { APP_VERSION } from '../js/version.js';
+
+// Versionsnummer und Monat immer aus der App selbst
+const MONATE = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+const [, mm, yyyy] = APP_VERSION.date.split('.');
+const v = document.getElementById('version');
+v.firstChild.textContent = `Version ${APP_VERSION.number}`;
+v.querySelector('span').textContent = `${MONATE[Number(mm) - 1]} ${yyyy}`;
 const cal = (id) => DEFAULT_CALIBERS.find((c) => c.id === id);
 
 // Titelseite: Parade im echten Größenverhältnis, Maßstab nach der längsten Patrone
