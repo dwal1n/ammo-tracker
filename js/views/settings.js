@@ -67,6 +67,11 @@ export function render() {
     <button class="btn-secondary" data-action="newCaliber">Eigenes Kaliber anlegen</button>
   </section>
   <section class="set">
+    <h2 class="sub-head">Handbuch</h2>
+    <p class="muted">Alle Funktionen Schritt für Schritt mit Bildern, dazu eine Kurzübersicht für den Stand. Funktioniert auch ohne Empfang.</p>
+    <a class="btn-secondary btn-link" href="./handbuch/handbuch.html">Handbuch öffnen</a>
+  </section>
+  <section class="set">
     <h2 class="sub-head">Datenschutz</h2>
     <p class="muted">Die App hat kein Konto, keine Cloud, keine Werbung und keine Statistik-Dienste. Sie lädt nach der Installation nichts mehr aus dem Internet und darf technisch auch keine Verbindung nach außen aufbauen. Deine Daten verlassen das Gerät nur, wenn du selbst eine Sicherung erstellst und weitergibst.</p>
   </section>

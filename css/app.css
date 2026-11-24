@@ -97,6 +97,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   background: var(--surface-2);
   padding: 0 18px;
 }
+/* Link, der wie ein Knopf aussieht (z. B. Handbuch öffnen) */
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--r-m);
+  color: var(--text);
+  text-decoration: none;
+}
 
 /* Patronenparade: Kaliber im echten Größenverhältnis auf einem Brett */
 .parade {

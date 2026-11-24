@@ -1,13 +1,17 @@
 // Service Worker: hält alle App-Dateien auf dem Gerät, damit die App offline startet.
 // Er lädt ausschließlich Dateien der App selbst, nie etwas von fremden Servern.
 // Bei jeder Änderung an App-Dateien VERSION erhöhen (und js/version.js).
-const VERSION = 'ammo-v11';
+const VERSION = 'ammo-v12';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/app.css',
   './js/app.js', './js/version.js', './js/keyboard.js', './js/store.js', './js/db.js', './js/model.js', './js/ui.js', './js/anim.js',
   './js/calibers.js', './js/cartridge-svg.js', './js/scan.js', './js/scanner.js', './vendor/zxing.min.js',
   './js/views/stock.js', './js/views/training.js', './js/views/history.js', './js/views/firearms.js', './js/views/settings.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
+  // Handbuch, damit es auch am Stand ohne Empfang aufgeht
+  './handbuch/handbuch.html', './handbuch/img/bestand.png', './handbuch/img/buchen.png', './handbuch/img/mehr.png',
+  './handbuch/img/mindestbestand.png', './handbuch/img/neue-packung.png', './handbuch/img/scanner.png', './handbuch/img/sicherung.png',
+  './handbuch/img/sorte.png', './handbuch/img/training-ende.png', './handbuch/img/training.png', './handbuch/img/verlauf.png', './handbuch/img/waffen.png',
 ];
 
 self.addEventListener('install', (e) => {

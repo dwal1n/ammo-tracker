@@ -247,7 +247,7 @@ if (only === 'vorschau') {
   const dir = fileURLToPath(new URL('./.handbuch-vorschau/', import.meta.url));
   mkdirSync(dir, { recursive: true });
   await send('Emulation.setDeviceMetricsOverride', { width: 900, height: 1200, deviceScaleFactor: 1, mobile: false });
-  await goto(BASE + 'handbuch/handbuch.html');
+  await goto(BASE + 'handbuch/handbuch.html?druck');
   const rects = await js(`[...document.querySelectorAll('.page')].map((p) => { const r = p.getBoundingClientRect(); return { x: r.x, y: r.y + scrollY, width: r.width, height: r.height }; })`);
   for (const [i, r] of rects.entries()) {
     const { data } = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip: { ...r, scale: 0.9 } });
@@ -259,11 +259,20 @@ if (only === 'vorschau') {
 // ---- 2. PDF --------------------------------------------------------------
 await send('Emulation.clearDeviceMetricsOverride');
 await send('Emulation.setEmulatedMedia', { media: 'print' });
-await goto(BASE + 'handbuch/handbuch.html');
+await goto(BASE + 'handbuch/handbuch.html?druck');
 await js('document.fonts.ready.then(() => true)');
 const { data } = await send('Page.printToPDF', { preferCSSPageSize: true, printBackground: true, displayHeaderFooter: false });
-writeFileSync(root + 'Ammo Tracker Handbuch.pdf', Buffer.from(data, 'base64'));
-console.log('PDF: Ammo Tracker Handbuch.pdf');
+// Ist das PDF gerade in einem Programm geöffnet, unter Ausweichnamen speichern
+let pdfName = 'Ammo Tracker Handbuch.pdf';
+try {
+  writeFileSync(root + pdfName, Buffer.from(data, 'base64'));
+} catch (err) {
+  if (err.code !== 'EBUSY' && err.code !== 'EPERM') throw err;
+  pdfName = 'Ammo Tracker Handbuch (neu).pdf';
+  writeFileSync(root + pdfName, Buffer.from(data, 'base64'));
+  console.log('Hinweis: Das alte PDF ist geöffnet, das neue heißt deshalb anders.');
+}
+console.log('PDF:', pdfName);
 
 ws.close();
 proc.kill();
