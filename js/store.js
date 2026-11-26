@@ -1,6 +1,6 @@
 // Zentraler Zustand der App: alle Daten im Speicher, jede Änderung sofort in IndexedDB.
 import * as db from './db.js';
-import { DEFAULT_CALIBERS, FAMILY_LABELS, DEALERS } from './calibers.js';
+import { DEFAULT_CALIBERS, FAMILY_LABELS, DEALERS, CALIBER_GROUPS } from './calibers.js';
 import { cartridgeSVG } from './cartridge-svg.js';
 import { stockByLoad, avgPrice, STORES, newId, mergeData, SCHEMA_VERSION } from './model.js';
 import { nowLocal, uniqueList } from './ui.js';
@@ -62,13 +62,15 @@ export function loadLabel(l) {
   return [parts || 'Ohne Namen', l.grain ? `${String(l.grain).replace('.', ',')} gr` : ''].filter(Boolean).join(' ');
 }
 
-// „Meine Kaliber“: ausgewählte, plus alle, die schon benutzt werden (und das gerade gewählte)
+// „Meine Kaliber“: ausgewählte, plus alle, die schon benutzt werden (und das gerade gewählte).
+// Gehört eins davon zu einem Hauptkaliber, erscheinen dessen Geschwister mit (12/70 → auch 12/65, 12/76).
 export function visibleCalibers(keepId) {
   const mine = state.settings.myCalibers || [];
   if (!mine.length) return state.calibers;
   const keep = new Set([...mine, keepId,
     ...state.loads.map((l) => l.caliberId), ...state.firearms.map((f) => f.caliberId)]);
-  return state.calibers.filter((c) => keep.has(c.id));
+  const groups = new Set([...keep].map((id) => CALIBER_GROUPS[id]).filter(Boolean));
+  return state.calibers.filter((c) => keep.has(c.id) || groups.has(CALIBER_GROUPS[c.id]));
 }
 
 export function defaultCaliber() {
