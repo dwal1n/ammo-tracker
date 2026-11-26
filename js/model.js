@@ -1,4 +1,5 @@
 // Reine Rechenlogik ohne Browser-Abhängigkeiten (in Node testbar).
+import { CALIBER_GROUPS, GROUP_NAMES, ALSO_FITS } from './calibers.js';
 
 export const SCHEMA_VERSION = 2;
 // packs: gelernte Packungen { id: 'ean:…' | 'qr:…', loadId, perPack, packPrice, ambiguous }
@@ -53,6 +54,52 @@ export function caliberTotals(data) {
     t.set(l.caliberId, (t.get(l.caliberId) || 0) + (stock.get(l.id) || 0));
   }
   return t;
+}
+
+// ---- Hauptkaliber und Unterarten ------------------------------------------
+
+export const artKey = (art) => String(art ?? '').trim().toLowerCase();
+export const groupOf = (caliberId) => CALIBER_GROUPS[caliberId] || caliberId;
+export const fitsFirearm = (loadCaliberId, firearmCaliberId) =>
+  loadCaliberId === firearmCaliberId || (ALSO_FITS[firearmCaliberId] || []).includes(loadCaliberId);
+
+// Bestand als Baum: Block (Hauptkaliber) → Unterart (Kaliber + Art) → Sorte.
+// Blöcke und Unterarten nach Bestand absteigend, Sorten in der gegebenen Reihenfolge.
+export function stockTree(data, caliberById) {
+  const stock = stockByLoad(data);
+  const blocks = new Map();
+  for (const load of data.loads || []) {
+    const cal = caliberById(load.caliberId);
+    if (!cal) continue;
+    const gid = groupOf(cal.id);
+    if (!blocks.has(gid)) blocks.set(gid, { id: gid, subs: new Map() });
+    const subs = blocks.get(gid).subs;
+    const key = `${cal.id}|${artKey(load.art)}`;
+    if (!subs.has(key)) subs.set(key, { key, caliberId: cal.id, art: String(load.art ?? '').trim(), total: 0, loads: [] });
+    const sub = subs.get(key);
+    const qty = stock.get(load.id) || 0;
+    sub.loads.push({ load, qty });
+    sub.total += qty;
+  }
+  const byTotal = (a, b) => b.total - a.total;
+  return [...blocks.values()].map(({ id, subs }) => {
+    const list = [...subs.values()].sort(byTotal);
+    const calTotals = new Map();
+    for (const s of list) calTotals.set(s.caliberId, (calTotals.get(s.caliberId) || 0) + s.total);
+    const caliberIds = [...calTotals].sort((a, b) => b[1] - a[1]).map(([cid]) => cid);
+    const multi = caliberIds.length > 1;
+    for (const s of list) {
+      const cname = caliberById(s.caliberId).name;
+      s.label = multi ? [cname, s.art].filter(Boolean).join(' ') : (s.art || cname);
+    }
+    return {
+      id,
+      name: multi ? (GROUP_NAMES[id] || id) : caliberById(caliberIds[0]).name,
+      caliberIds,
+      total: list.reduce((a, s) => a + s.total, 0),
+      subs: list,
+    };
+  }).sort(byTotal);
 }
 
 // Gewichteter Durchschnittspreis pro Schuss, null wenn kein Einkauf mit Preis

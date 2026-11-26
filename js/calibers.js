@@ -125,3 +125,16 @@ export function guessDims(family, bulletMm = 9, caseLenMm) {
     }
   }
 }
+
+// Hauptkaliber: Kaliber, die zusammen gezählt werden. Fehlt ein Kaliber hier, ist es seine eigene Gruppe.
+// Steht im Code statt in der Datenbank, weil gespeicherte Vorgabe-Kaliber keine neuen Felder bekommen.
+export const CALIBER_GROUPS = {
+  'c-12-70': 'g-12', 'c-12-76': 'g-12',
+  'c-357': 'g-357', 'c-38spl': 'g-357',
+};
+export const GROUP_NAMES = { 'g-12': 'Kaliber 12', 'g-357': '.357 Mag / .38 Spl' };
+
+// Waffen-Kaliber → welche anderen Kaliber sie zusätzlich verschießen kann (nur in diese Richtung)
+export const ALSO_FITS = { 'c-12-76': ['c-12-70'], 'c-357': ['c-38spl'] };
+
+export const ART_SUGGESTIONS = ['Standard', 'High Velocity', 'Subsonic', 'Match', 'Buckshot', 'Flintenlaufgeschoss'];
