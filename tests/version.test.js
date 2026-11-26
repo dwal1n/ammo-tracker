@@ -5,9 +5,10 @@ import { APP_VERSION } from '../js/version.js';
 
 test('Angezeigte Version und Offline-Speicher-Version stimmen überein', () => {
   const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
-  const m = sw.match(/const VERSION = 'ammo-v(\d+)'/);
+  const m = sw.match(/const VERSION = 'ammo-v([^']+)'/);
   assert.ok(m, 'VERSION in sw.js nicht gefunden');
-  assert.equal(Number(m[1]), APP_VERSION.number);
+  assert.match(APP_VERSION.number, /^\d+\.\d+\.\d+$/, 'Version muss Major.Minor.Patch sein, z. B. 1.15.0');
+  assert.equal(m[1], APP_VERSION.number);
   assert.match(sw, /'\.\/js\/version\.js'/, 'version.js fehlt im Offline-Speicher');
 });
 
