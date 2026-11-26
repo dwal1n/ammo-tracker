@@ -1,14 +1,24 @@
 // Bestand: Patronenparade, Kaliber mit Sorten, Einkauf, Korrektur, Sorten verwalten
 import * as S from '../store.js';
 import { esc, fmt, eur, eurShot, today, dateDE, sheet, confirmSheet, toast, ICONS, uniqueList } from '../ui.js';
-import { isLow, caliberTotals } from '../model.js';
+import { isLow, stockTree } from '../model.js';
 import { BULLET_LABELS, MAKERS, DEALERS, ART_SUGGESTIONS } from '../calibers.js';
 import { countUp, blink, flash, paradeIntro } from '../anim.js';
 
 const BACKUP_DAYS = 30;
 
+// Summe eines Kalibers innerhalb eines Blocks (über alle Arten)
+const calTotal = (b, cid) => b.subs.filter((s) => s.caliberId === cid).reduce((a, s) => a + s.total, 0);
+
+// Warnung, wenn ein Kaliber des Blocks unter seinen Mindestbestand fällt oder eine Sorte unter ihren eigenen
+function blockLow(b) {
+  return b.caliberIds.some((cid) => isLow(S.caliber(cid) || {}, calTotal(b, cid)))
+    || b.subs.some((s) => s.loads.some(({ load, qty }) => isLow(load, qty)));
+}
+
+const activeTree = () => stockTree({ ...S.state, loads: S.state.loads.filter((l) => !l.archived) }, S.caliber);
+
 export function render() {
-  const st = S.stock();
   const loads = S.state.loads.filter((l) => !l.archived);
   const head = `<header class="page-head"><h1 class="label">Bestand</h1>
     <span class="head-btns">
@@ -26,41 +36,39 @@ export function render() {
     </div>`;
   }
 
-  // Kaliber in der Reihenfolge des größten Bestands
-  const totals = caliberTotals({ ...S.state, loads });
-  const cals = [...new Set(loads.map((l) => l.caliberId))]
-    .map((id) => S.caliber(id))
-    .filter(Boolean)
-    .sort((a, b) => (totals.get(b.id) || 0) - (totals.get(a.id) || 0));
+  // Hauptkaliber (Blöcke) in der Reihenfolge des größten Bestands, darin Unterarten und Sorten
+  const tree = stockTree({ ...S.state, loads }, S.caliber);
 
-  // Warnung, wenn die Gesamtzahl unter den Kaliber-Mindestbestand fällt oder eine Sorte unter ihren eigenen
-  const lowCal = (c) => isLow(c, totals.get(c.id) || 0)
-    || loads.some((l) => l.caliberId === c.id && isLow(l, st.get(l.id) || 0));
-
-  const parade = `<div class="parade" aria-label="Kaliber im Größenvergleich">${cals.map((c) => {
-    const first = loads.find((l) => l.caliberId === c.id);
-    return `<button class="parade-item${lowCal(c) ? ' low' : ''}" data-action="scrollTo" data-id="${c.id}">
-      <span class="pi-img">${S.cart(c, { scale: 2.4 }, first)}</span>
-      <span class="num" data-count="${totals.get(c.id) || 0}">${fmt(totals.get(c.id) || 0)}</span>
-      <span class="cap">${esc(c.name)}</span></button>`;
+  const parade = `<div class="parade" aria-label="Kaliber im Größenvergleich">${tree.map((b) => {
+    const top = b.subs[0];
+    return `<button class="parade-item${blockLow(b) ? ' low' : ''}" data-action="scrollTo" data-id="${esc(b.id)}">
+      <span class="pi-img">${S.cart(S.caliber(top.caliberId), { scale: 2.4 }, top.loads[0].load)}</span>
+      <span class="num" data-count="${b.total}">${fmt(b.total)}</span>
+      <span class="cap">${esc(b.name)}</span></button>`;
   }).join('')}</div>`;
 
-  const rows = cals.map((c) => {
-    const ls = loads.filter((l) => l.caliberId === c.id);
-    const t = totals.get(c.id) || 0;
-    const low = lowCal(c);
-    return `<section class="stock-row${low ? ' low' : ''}" id="cal-${c.id}">
-      <div class="thumb">${S.cart(c, { height: 64 }, ls[0])}</div>
-      <button class="label name" data-action="editCalMin" data-id="${c.id}" aria-label="Mindestbestand für ${esc(c.name)} festlegen">${esc(c.name)}${low ? `<span class="badge-low">${ICONS.warn}Mindestbestand</span>` : ''}</button>
-      <div class="num total"><span data-cal-total="${c.id}">${fmt(t)}</span><small>Schuss${c.minStock > 0 ? `, min. ${fmt(c.minStock)}` : ''}</small></div>
-      <div class="loads">${ls.map((l) => {
-        const q = st.get(l.id) || 0;
-        const p = S.price(l.id);
-        return `<button class="load${isLow(l, q) ? ' low' : ''}" data-action="openLoad" data-id="${l.id}">
+  const loadRow = ({ load: l, qty: q }) => {
+    const p = S.price(l.id);
+    return `<button class="load${isLow(l, q) ? ' low' : ''}" data-action="openLoad" data-id="${l.id}">
           <span class="ln">${esc(S.loadLabel(l))}</span>
           <span class="q" data-load-qty="${l.id}">${fmt(q)}</span>
           <span class="p">${p == null ? '' : eurShot(p)}</span></button>`;
-      }).join('')}</div>
+  };
+
+  const rows = tree.map((b) => {
+    const top = b.subs[0];
+    const low = blockLow(b);
+    const single = b.caliberIds.length === 1 ? S.caliber(b.caliberIds[0]) : null;
+    const withSubs = b.subs.length > 1;
+    return `<section class="stock-row${low ? ' low' : ''}" id="cal-${esc(b.id)}">
+      <div class="thumb">${S.cart(S.caliber(top.caliberId), { height: 64 }, top.loads[0].load)}</div>
+      <button class="label name" data-action="editCalMin" data-id="${esc(b.id)}" aria-label="Mindestbestand für ${esc(b.name)} festlegen">${esc(b.name)}${low ? `<span class="badge-low">${ICONS.warn}Mindestbestand</span>` : ''}</button>
+      <div class="num total"><span data-block-total="${esc(b.id)}">${fmt(b.total)}</span><small>Schuss${single?.minStock > 0 ? `, min. ${fmt(single.minStock)}` : ''}</small></div>
+      <div class="loads">${b.subs.map((s) => (withSubs
+        ? `<div class="sub-row"><span class="sub-img">${S.cart(S.caliber(s.caliberId), { height: 28 }, s.loads[0].load)}</span>
+            <span class="sub-label">${esc(s.label)}</span>
+            <span class="q" data-sub-total="${esc(s.key)}">${fmt(s.total)}</span></div>`
+        : '') + s.loads.map(loadRow).join('')).join('')}</div>
     </section>`;
   }).join('');
 
@@ -83,22 +91,24 @@ export function mount(root) {
   const before = S.state.fx.stockBefore;
   if (before) {
     S.state.fx.stockBefore = null;
-    const now = S.stock();
-    for (const [id, q] of now) {
-      const old = before.get(id);
-      if (old === undefined || old === q) continue;
-      const el = root.querySelector(`[data-load-qty="${id}"]`);
-      countUp(el, old, q);
-      flash(el?.closest('.load'));
-      const l = S.load(id);
-      // Kaliber-Summe
-      if (l) {
-        const tEl = root.querySelector(`[data-cal-total="${CSS.escape(l.caliberId)}"]`);
-        const sumOld = S.state.loads.filter((x) => x.caliberId === l.caliberId && !x.archived).reduce((a, x) => a + (before.get(x.id) ?? now.get(x.id) ?? 0), 0);
-        const sumNew = S.state.loads.filter((x) => x.caliberId === l.caliberId && !x.archived).reduce((a, x) => a + (now.get(x.id) || 0), 0);
-        countUp(tEl, sumOld, sumNew);
-        if (isLow(l, q) || isLow(S.caliber(l.caliberId) || {}, sumNew)) blink(root.querySelector(`#cal-${CSS.escape(l.caliberId)} .badge-low`));
+    const oldQty = ({ load, qty }) => before.get(load.id) ?? qty;
+    const changed = ({ load, qty }) => before.has(load.id) && before.get(load.id) !== qty;
+    for (const b of activeTree()) {
+      let blockChanged = false;
+      for (const s of b.subs) {
+        if (!s.loads.some(changed)) continue;
+        blockChanged = true;
+        for (const x of s.loads.filter(changed)) {
+          const el = root.querySelector(`[data-load-qty="${CSS.escape(x.load.id)}"]`);
+          countUp(el, before.get(x.load.id), x.qty);
+          flash(el?.closest('.load'));
+        }
+        countUp(root.querySelector(`[data-sub-total="${CSS.escape(s.key)}"]`), s.loads.reduce((a, x) => a + oldQty(x), 0), s.total);
       }
+      if (!blockChanged) continue;
+      const sumOld = b.subs.reduce((a, s) => a + s.loads.reduce((c, x) => c + oldQty(x), 0), 0);
+      countUp(root.querySelector(`[data-block-total="${CSS.escape(b.id)}"]`), sumOld, b.total);
+      if (blockLow(b)) blink(root.querySelector(`#cal-${CSS.escape(b.id)} .badge-low`));
     }
   }
 }
@@ -259,28 +269,33 @@ async function openLoad(l) {
   if (r?.action === 'edit') return editLoad(l);
 }
 
-// Mindestbestand für ein ganzes Kaliber (Summe aller Sorten, egal von welchem Hersteller)
-async function editCaliberMin(c) {
-  if (!c) return;
-  const total = caliberTotals({ ...S.state, loads: S.state.loads.filter((l) => !l.archived) }).get(c.id) || 0;
+// Mindestbestand für die Kaliber eines Blocks (je Kaliber die Summe aller Sorten, egal von welchem Hersteller).
+// Ein Block mit mehreren Kalibern (z. B. Kaliber 12) bekommt ein Feld pro Kaliber.
+async function editCaliberMin(blockId) {
+  const b = activeTree().find((x) => x.id === blockId);
+  if (!b) return;
+  const cals = b.caliberIds.map((id) => S.caliber(id)).filter(Boolean);
+  const multi = cals.length > 1;
   const r = await sheet({
-    title: `Mindestbestand ${c.name}`,
-    intro: `<p class="sheet-text">Du hast insgesamt <b>${fmt(total)}</b> Patronen ${esc(c.name)}, über alle Sorten und Hersteller zusammen.</p>`,
-    fields: [
-      { name: 'minStock', label: 'Mindestbestand (alle Sorten zusammen)', type: 'number', value: c.minStock || '', placeholder: 'leer = keine Warnung', autofocus: true,
-        hint: 'Fällt die Gesamtzahl darunter, wird das Kaliber rot markiert.' },
-    ],
+    title: `Mindestbestand ${b.name}`,
+    intro: `<p class="sheet-text">Du hast insgesamt <b>${fmt(b.total)}</b> Patronen ${esc(b.name)}, über alle Sorten und Hersteller zusammen.</p>`,
+    fields: cals.map((c, i) => ({
+      name: `minStock_${c.id}`,
+      label: multi ? `Mindestbestand ${c.name} (${fmt(calTotal(b, c.id))} vorhanden)` : 'Mindestbestand (alle Sorten zusammen)',
+      type: 'number', value: c.minStock || '', placeholder: 'leer = keine Warnung', autofocus: i === 0,
+      hint: i === cals.length - 1 ? 'Fällt die Gesamtzahl eines Kalibers darunter, wird es rot markiert.' : '',
+    })),
     submit: 'Sichern',
   });
   if (!r) return;
-  await S.save('calibers', { ...c, minStock: r.values.minStock || 0 });
-  toast(r.values.minStock ? `Mindestbestand ${fmt(r.values.minStock)} gesetzt` : 'Mindestbestand entfernt');
+  for (const c of cals) await S.save('calibers', { ...c, minStock: r.values[`minStock_${c.id}`] || 0 });
+  toast(cals.some((c) => r.values[`minStock_${c.id}`]) ? 'Mindestbestand gesichert' : 'Mindestbestand entfernt');
   S.render();
 }
 
 export const actions = {
   newLoad: () => editLoad(null),
-  editCalMin: (el) => editCaliberMin(S.caliber(el.dataset.id)),
+  editCalMin: (el) => editCaliberMin(el.dataset.id),
   openLoad: (el) => openLoad(S.load(el.dataset.id)),
   scrollTo: (el) => document.getElementById(`cal-${el.dataset.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
   goBackup: () => { S.state.tab = 'more'; S.render(); },
