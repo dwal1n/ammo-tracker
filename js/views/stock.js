@@ -2,7 +2,7 @@
 import * as S from '../store.js';
 import { esc, fmt, eur, eurShot, today, dateDE, sheet, confirmSheet, toast, ICONS, uniqueList } from '../ui.js';
 import { isLow, caliberTotals } from '../model.js';
-import { BULLET_LABELS, MAKERS, DEALERS } from '../calibers.js';
+import { BULLET_LABELS, MAKERS, DEALERS, ART_SUGGESTIONS } from '../calibers.js';
 import { countUp, blink, flash, paradeIntro } from '../anim.js';
 
 const BACKUP_DAYS = 30;
@@ -119,6 +119,9 @@ function loadFields(l = {}, isNew = false) {
       suggestions: uniqueList(S.state.loads.map((x) => x.maker), MAKERS) },
     { name: 'name', label: 'Bezeichnung', value: l.name, placeholder: 'z. B. FMJ, Target, Trap',
       suggestions: uniqueList(S.state.loads.map((x) => x.name), ['FMJ', 'JHP', 'LRN', 'Wadcutter', 'Target', 'Match', 'Trap', 'Skeet', 'Sport']) },
+    { name: 'art', label: 'Art', value: l.art, placeholder: 'optional, z. B. Buckshot, High Velocity',
+      suggestions: uniqueList(S.state.loads.map((x) => x.art), ART_SUGGESTIONS),
+      hint: 'Sorten mit gleicher Art werden im Bestand zusammengezählt.' },
     { name: 'grain', label: 'Geschossgewicht (grain)', type: 'number', inputmode: 'decimal', value: l.grain ?? '', placeholder: 'optional' },
     { name: 'bulletType', label: 'Geschossform für das Bild', type: 'select', options: BULLET_OPTS, value: l.bulletType || '' },
     { name: 'caseColor', label: 'Hülse für das Bild', type: 'select', options: CASE_OPTS, value: l.caseColor || '' },
@@ -164,7 +167,7 @@ async function editLoad(l) {
   }
   const v = r.values;
   const row = {
-    ...(l || {}), caliberId: v.caliberId, maker: v.maker, name: v.name, grain: v.grain,
+    ...(l || {}), caliberId: v.caliberId, maker: v.maker, name: v.name, art: (v.art || '').trim(), grain: v.grain,
     bulletType: v.bulletType, caseColor: v.caseColor, minStock: v.minStock || 0, archived: l?.archived || false,
   };
   S.markStockChange();
