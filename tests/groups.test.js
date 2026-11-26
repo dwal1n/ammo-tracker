@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { groupOf, fitsFirearm, stockTree, artKey } from '../js/model.js';
+import { groupOf, fitsFirearm, stockTree, artKey, pickLoad } from '../js/model.js';
 import { DEFAULT_CALIBERS } from '../js/calibers.js';
 
 const caliberById = (id) => DEFAULT_CALIBERS.find((c) => c.id === id);
@@ -92,4 +92,36 @@ test('Sorte mit gelöschtem Kaliber wird übersprungen', () => {
 test('Blöcke stehen nach Gesamtzahl, der größte zuerst', () => {
   const tree = stockTree(data([['a', 'c-9luger', '', 100], ['t', 'c-12-70', '', 300], ['u', 'c-12-76', '', 180]]), caliberById);
   assert.deepEqual(tree.map((b) => b.id), ['g-12', 'c-9luger']);
+});
+
+// ---- Vorschlag der Sorte im Training ---------------------------------------
+const pl = [
+  { id: 'l70', caliberId: 'c-12-70' },
+  { id: 'l70b', caliberId: 'c-12-70' },
+  { id: 'l76', caliberId: 'c-12-76' },
+  { id: 'l9', caliberId: 'c-9luger' },
+  { id: 'old76', caliberId: 'c-12-76', archived: true },
+];
+const pst = new Map([['l70', 50], ['l70b', 200], ['l76', 10], ['l9', 500], ['old76', 999]]);
+
+test('pickLoad schlägt für eine 12/70-Flinte nie 12/76 vor, auch nicht als Rückfall', () => {
+  const only76 = [{ id: 'l76', caliberId: 'c-12-76' }];
+  assert.equal(pickLoad(only76, pst, 'c-12-70', []), '');
+  assert.equal(pickLoad(pl, pst, 'c-12-70', ['l76']), 'l70b');
+});
+
+test('pickLoad nimmt die zuletzt benutzte Sorte nur, wenn sie zur Waffe passt', () => {
+  assert.equal(pickLoad(pl, pst, 'c-12-76', ['l70']), 'l70');
+  assert.equal(pickLoad(pl, pst, 'c-12-70', ['l9']), 'l70b');
+});
+
+test('pickLoad bevorzugt das eigene Kaliber, dann verträgliche, ausgeblendete nie', () => {
+  assert.equal(pickLoad(pl, pst, 'c-12-76', []), 'l76');
+  assert.equal(pickLoad(pl.filter((l) => l.id !== 'l76'), pst, 'c-12-76', []), 'l70b');
+});
+
+test('pickLoad ohne Waffe: zuletzt benutzte, sonst erste aktive Sorte', () => {
+  assert.equal(pickLoad(pl, pst, '', ['l9']), 'l9');
+  assert.equal(pickLoad(pl, pst, '', ['old76']), 'l70');
+  assert.equal(pickLoad([], pst, '', []), '');
 });

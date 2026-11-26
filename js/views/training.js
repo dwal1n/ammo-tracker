@@ -1,7 +1,7 @@
 // Training: starten, Durchgänge eintragen, beenden
 import * as S from '../store.js';
 import { esc, fmt, eur, nowLocal, timeDE, dateDE, sheet, confirmSheet, toast, ICONS } from '../ui.js';
-import { sessionSummary, newId, fitsFirearm } from '../model.js';
+import { sessionSummary, newId, fitsFirearm, pickLoad } from '../model.js';
 import { countUp, ejectCasings } from '../anim.js';
 
 const QUICK = [5, 10, 15, 20, 25, 50];
@@ -99,18 +99,9 @@ function loadOptions() {
 // erst danach eine verträgliche (z. B. 12/70 für eine 12/76-Flinte)
 function guessLoad(firearmId) {
   const st = S.state.settings;
-  if (firearmId) {
-    const last = st.lastLoadByFirearm?.[firearmId];
-    if (S.load(last) && !S.load(last).archived) return last;
-    const fa = S.firearm(firearmId);
-    const stock = S.stock();
-    const best = (ok) => S.state.loads.filter((l) => !l.archived && ok(l))
-      .sort((a, b) => (stock.get(b.id) || 0) - (stock.get(a.id) || 0))[0];
-    const match = fa && (best((l) => l.caliberId === fa.caliberId) || best((l) => fitsFirearm(l.caliberId, fa.caliberId)));
-    if (match) return match.id;
-  }
-  if (S.load(st.lastLoad) && !S.load(st.lastLoad).archived) return st.lastLoad;
-  return S.state.loads.find((l) => !l.archived)?.id || '';
+  const fa = S.firearm(firearmId);
+  const lastIds = fa ? [st.lastLoadByFirearm?.[fa.id]] : [st.lastLoad];
+  return pickLoad(S.state.loads, S.stock(), fa?.caliberId || '', lastIds);
 }
 
 async function choose(s, intro = '') {
@@ -124,9 +115,13 @@ async function choose(s, intro = '') {
     submit: 'Übernehmen',
     validate: (v) => {
       const lid = v.load || guessLoad(v.firearm);
-      if (!lid) return 'Bitte eine Munitionssorte wählen.';
       const fa = S.firearm(v.firearm);
-      if (fa?.caliberId && v.load && !fitsFirearm(S.load(v.load)?.caliberId, fa.caliberId)) {
+      if (!lid) {
+        return fa?.caliberId
+          ? `Für ${fa.name} (${S.caliber(fa.caliberId)?.name}) ist keine passende Munition im Bestand. Bitte eine Sorte anlegen oder wählen.`
+          : 'Bitte eine Munitionssorte wählen.';
+      }
+      if (fa?.caliberId && !fitsFirearm(S.load(lid)?.caliberId, fa.caliberId)) {
         return `Diese Sorte passt nicht zum Kaliber der Waffe (${S.caliber(fa.caliberId)?.name}).`;
       }
       return '';

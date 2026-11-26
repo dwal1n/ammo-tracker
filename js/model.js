@@ -63,6 +63,21 @@ export const groupOf = (caliberId) => CALIBER_GROUPS[caliberId] || caliberId;
 export const fitsFirearm = (loadCaliberId, firearmCaliberId) =>
   loadCaliberId === firearmCaliberId || (ALSO_FITS[firearmCaliberId] || []).includes(loadCaliberId);
 
+// Sorte für das Training vorschlagen. lastIds: zuletzt benutzte Sorten in Vorrang-Reihenfolge.
+// Mit Waffe: zuletzt benutzte nur, wenn sie passt; sonst größter Bestand im eigenen Kaliber,
+// dann in einem verträglichen. Passt nichts, '' (nie eine unpassende Sorte als Rückfall).
+export function pickLoad(loads, stock, firearmCaliberId, lastIds = []) {
+  const active = loads.filter((l) => !l.archived);
+  const fits = (l) => !firearmCaliberId || fitsFirearm(l.caliberId, firearmCaliberId);
+  for (const id of lastIds) {
+    const l = active.find((x) => x.id === id);
+    if (l && fits(l)) return l.id;
+  }
+  if (!firearmCaliberId) return active[0]?.id || '';
+  const best = (ok) => active.filter(ok).sort((a, b) => (stock.get(b.id) || 0) - (stock.get(a.id) || 0))[0];
+  return (best((l) => l.caliberId === firearmCaliberId) || best(fits))?.id || '';
+}
+
 // Bestand als Baum: Block (Hauptkaliber) → Unterart (Kaliber + Art) → Sorte.
 // Blöcke und Unterarten nach Bestand absteigend, Sorten in der gegebenen Reihenfolge.
 export function stockTree(data, caliberById) {
