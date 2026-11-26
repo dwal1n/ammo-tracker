@@ -9,7 +9,7 @@ Nach der Installation lädt die App nichts mehr aus dem Internet und darf techni
 ## Funktionen
 
 - Bestand pro Kaliber mit einzelnen Sorten (Hersteller, Geschossgewicht, Preis)
-- Hauptkaliber mit Unterarten: Kaliber 12 (12/70, 12/76) und .357/.38 zusammengezählt, Zwischensummen je Art (z. B. Buckshot, High Velocity); im Training passt 12/70 in 12/76 und .38 Spl in .357
+- Hauptkaliber mit Unterarten: Kaliber 12 (12/65, 12/70, 12/76) und .357/.38 zusammengezählt, Summe je Kaliber und darunter je Art (z. B. Trap, Buckshot, High Velocity); im Training passt 12/65 in 12/70 und 12/76, 12/70 in 12/76 und .38 Spl in .357
 - Packungen per Strichcode oder QR-Code scannen, Anzahl eingeben, fertig gebucht
 - Training am Stand: starten, nach jedem Durchgang die Anzahl antippen, beenden. Erst dann wird vom Bestand abgezogen
 - Einkäufe mit Preis, daraus Kosten pro Schuss und Wert des Bestands

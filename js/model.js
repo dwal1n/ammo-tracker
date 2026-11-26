@@ -78,7 +78,7 @@ export function pickLoad(loads, stock, firearmCaliberId, lastIds = []) {
   return (best((l) => l.caliberId === firearmCaliberId) || best(fits))?.id || '';
 }
 
-// Bestand als Baum: Block (Hauptkaliber) → Unterart (Kaliber + Art) → Sorte.
+// Bestand als Baum: Block (Hauptkaliber) → Kaliber → Art → Sorte (subs: flache Liste Kaliber + Art).
 // Blöcke und Unterarten nach Bestand absteigend, Sorten in der gegebenen Reihenfolge.
 export function stockTree(data, caliberById) {
   const stock = stockByLoad(data);
@@ -103,16 +103,19 @@ export function stockTree(data, caliberById) {
     for (const s of list) calTotals.set(s.caliberId, (calTotals.get(s.caliberId) || 0) + s.total);
     const caliberIds = [...calTotals].sort((a, b) => b[1] - a[1]).map(([cid]) => cid);
     const multi = caliberIds.length > 1;
-    for (const s of list) {
-      const cname = caliberById(s.caliberId).name;
-      s.label = multi ? [cname, s.art].filter(Boolean).join(' ') : (s.art || cname);
-    }
+    for (const s of list) s.label = s.art || caliberById(s.caliberId).name;
+    // Je Kaliber: Summe und seine Arten (Sorten ohne Art zuerst, dann nach Bestand)
+    const cals = caliberIds.map((cid) => {
+      const subs = list.filter((s) => s.caliberId === cid).sort((a, b) => (a.art ? 1 : 0) - (b.art ? 1 : 0));
+      return { caliberId: cid, name: caliberById(cid).name, total: calTotals.get(cid), subs };
+    });
     return {
       id,
       name: multi ? (GROUP_NAMES[id] || id) : caliberById(caliberIds[0]).name,
       caliberIds,
       total: list.reduce((a, s) => a + s.total, 0),
       subs: list,
+      cals,
     };
   }).sort(byTotal);
 }

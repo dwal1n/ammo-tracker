@@ -117,8 +117,8 @@ const SEED = `(async () => {
   await load('norma308', { caliberId: 'c-308', maker: 'Norma', name: 'Match', grain: 168 });
   await load('rws22', { caliberId: 'c-22lr', maker: 'RWS', name: 'Target Rifle', grain: 40, art: 'Standard' });
   await load('cci22', { caliberId: 'c-22lr', maker: 'CCI', name: 'Mini-Mag', grain: 40, art: 'High Velocity', caseColor: 'nickel' });
-  await load('trap', { caliberId: 'c-12-70', maker: 'Geco', name: 'Trap' });
-  await load('skeet', { caliberId: 'c-12-70', maker: 'Rio', name: 'Skeet' });
+  await load('trap', { caliberId: 'c-12-70', maker: 'Geco', name: 'Trap', art: 'Trap' });
+  await load('skeet', { caliberId: 'c-12-70', maker: 'Rio', name: 'Skeet', art: 'Skeet' });
   await load('buck', { caliberId: 'c-12-70', maker: 'Fiocchi', name: '00 Buck', art: 'Buckshot', caseColor: 'black' });
   await load('k76', { caliberId: 'c-12-76', maker: 'Rottweil', name: 'Waidmannsheil' });
   const buy = (k, date, qty, totalPrice, dealer) => save('purchases', { loadId: L[k], date, qty, totalPrice, dealer, note: '' });

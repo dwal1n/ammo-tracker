@@ -332,6 +332,9 @@ button:disabled { opacity: .4; cursor: default; }
 .sub-row .sub-img { display: flex; justify-content: center; align-items: flex-end; height: 28px; }
 .sub-row .sub-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sub-row .q { font-variant-numeric: tabular-nums; text-align: right; grid-column: 3; }
+.sub-row.kal-row { font-size: 16px; font-weight: 700; }
+.sub-row.art-row { margin-top: 8px; font-size: 15px; font-weight: 600; border-bottom-style: dashed; }
+.sub-row.art-row { padding-left: 14px; }
 
 @media (min-width: 860px) {
   .stock-list { display: grid; grid-template-columns: 1fr 1fr; column-gap: 1px; background: var(--line); }

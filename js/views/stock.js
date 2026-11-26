@@ -55,6 +55,11 @@ export function render() {
           <span class="p">${p == null ? '' : eurShot(p)}</span></button>`;
   };
 
+  // Zwischensumme einer Art (bzw. eines Kalibers ohne Art); inner = Art unter einer Kaliberzeile
+  const subRow = (s, inner = false) => `<div class="sub-row${inner ? ' art-row' : ''}"><span class="sub-img">${S.cart(S.caliber(s.caliberId), { height: inner ? 22 : 28 }, s.loads[0].load)}</span>
+            <span class="sub-label">${esc(s.label)}</span>
+            <span class="q" data-sub-total="${esc(s.key)}">${fmt(s.total)}</span></div>`;
+
   const rows = tree.map((b) => {
     const top = b.subs[0];
     const low = blockLow(b);
@@ -64,11 +69,12 @@ export function render() {
       <div class="thumb">${S.cart(S.caliber(top.caliberId), { height: 64 }, top.loads[0].load)}</div>
       <button class="label name" data-action="editCalMin" data-id="${esc(b.id)}" aria-label="Mindestbestand für ${esc(b.name)} festlegen">${esc(b.name)}${low ? `<span class="badge-low">${ICONS.warn}Mindestbestand</span>` : ''}</button>
       <div class="num total"><span data-block-total="${esc(b.id)}">${fmt(b.total)}</span><small>Schuss${single?.minStock > 0 ? `, min. ${fmt(single.minStock)}` : ''}</small></div>
-      <div class="loads">${b.subs.map((s) => (withSubs
-        ? `<div class="sub-row"><span class="sub-img">${S.cart(S.caliber(s.caliberId), { height: 28 }, s.loads[0].load)}</span>
-            <span class="sub-label">${esc(s.label)}</span>
-            <span class="q" data-sub-total="${esc(s.key)}">${fmt(s.total)}</span></div>`
-        : '') + s.loads.map(loadRow).join('')).join('')}</div>
+      <div class="loads">${single
+        ? b.subs.map((s) => (withSubs ? subRow(s) : '') + s.loads.map(loadRow).join('')).join('')
+        : b.cals.map((c) => `<div class="sub-row kal-row"><span class="sub-img">${S.cart(S.caliber(c.caliberId), { height: 28 }, c.subs[0].loads[0].load)}</span>
+            <span class="sub-label">${esc(c.name)}</span>
+            <span class="q" data-cal-total="${esc(b.id)}|${esc(c.caliberId)}">${fmt(c.total)}</span></div>`
+          + c.subs.map((s) => (s.art ? subRow(s, true) : '') + s.loads.map(loadRow).join('')).join('')).join('')}</div>
     </section>`;
   }).join('');
 
@@ -106,6 +112,10 @@ export function mount(root) {
         countUp(root.querySelector(`[data-sub-total="${CSS.escape(s.key)}"]`), s.loads.reduce((a, x) => a + oldQty(x), 0), s.total);
       }
       if (!blockChanged) continue;
+      for (const c of b.cals) {
+        const cOld = c.subs.reduce((a, s) => a + s.loads.reduce((x, y) => x + oldQty(y), 0), 0);
+        if (cOld !== c.total) countUp(root.querySelector(`[data-cal-total="${CSS.escape(`${b.id}|${c.caliberId}`)}"]`), cOld, c.total);
+      }
       const sumOld = b.subs.reduce((a, s) => a + s.loads.reduce((c, x) => c + oldQty(x), 0), 0);
       countUp(root.querySelector(`[data-block-total="${CSS.escape(b.id)}"]`), sumOld, b.total);
       if (blockLow(b)) blink(root.querySelector(`#cal-${CSS.escape(b.id)} .badge-low`));

@@ -51,13 +51,35 @@ test('Kaliber 12: Gesamtzahl und Zwischensummen je Kaliber und Art', () => {
   assert.equal(b.id, 'g-12');
   assert.equal(b.name, 'Kaliber 12');
   assert.equal(b.total, 480);
-  assert.deepEqual(b.subs.map((s) => s.label), ['12/70', '12/76', '12/70 Buckshot']);
+  assert.deepEqual(b.subs.map((s) => s.label), ['12/70', '12/76', 'Buckshot']);
   assert.deepEqual(b.subs.map((s) => s.total), [250, 150, 80]);
   assert.deepEqual(b.caliberIds, ['c-12-70', 'c-12-76']);
   const buck = b.subs[2];
   assert.equal(buck.art, 'Buckshot');
   assert.equal(buck.caliberId, 'c-12-70');
   assert.deepEqual(buck.loads.map((x) => [x.load.id, x.qty]), [['buck1', 50], ['buck2', 30]]);
+});
+
+test('Kaliber 12: Kaliberebene mit Summe, darunter die Arten', () => {
+  const [b] = stockTree(data([
+    ['buck65', 'c-12-65', 'Buckshot', 50],
+    ['trap', 'c-12-70', 'Trap', 850],
+    ['skeet', 'c-12-70', 'Skeet', 300],
+    ['slug', 'c-12-70', 'Slug', 100],
+    ['ohne', 'c-12-70', '', 20],
+  ]), caliberById);
+  assert.equal(b.name, 'Kaliber 12');
+  assert.equal(b.total, 1320);
+  assert.deepEqual(b.cals.map((c) => [c.name, c.total]), [['12/70', 1270], ['12/65', 50]]);
+  assert.deepEqual(b.cals[0].subs.map((s) => [s.label, s.total]), [['12/70', 20], ['Trap', 850], ['Skeet', 300], ['Slug', 100]]);
+  assert.deepEqual(b.cals[1].subs.map((s) => [s.label, s.total]), [['Buckshot', 50]]);
+});
+
+test('12/65 passt in 12/70 und 12/76, nicht umgekehrt', () => {
+  assert.equal(groupOf('c-12-65'), 'g-12');
+  assert.equal(fitsFirearm('c-12-65', 'c-12-70'), true);
+  assert.equal(fitsFirearm('c-12-65', 'c-12-76'), true);
+  assert.equal(fitsFirearm('c-12-70', 'c-12-65'), false);
 });
 
 test('Von einer Gruppe nur ein Kaliber vorhanden: Block heißt wie das Kaliber', () => {
