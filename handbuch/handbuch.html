@@ -241,15 +241,15 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
   <h3>Inhalt</h3>
   <div class="toc">
     <div><span class="n">1</span>Worum es geht, Installation<span class="s">2</span></div>
-    <div><span class="n">6</span>Training am Stand<span class="s">7</span></div>
+    <div><span class="n">6</span>Training am Stand<span class="s">8</span></div>
     <div><span class="n">2</span>Die fünf Bereiche, erste Schritte<span class="s">3</span></div>
-    <div><span class="n">7</span>Waffen, Verlauf und Statistik<span class="s">8</span></div>
+    <div><span class="n">7</span>Waffen, Verlauf und Statistik<span class="s">9</span></div>
     <div><span class="n">3</span>Bestand<span class="s">4</span></div>
-    <div><span class="n">8</span>Einstellungen, Sicherung und Abgleich<span class="s">9</span></div>
-    <div><span class="n">4</span>Mindestbestand<span class="s">5</span></div>
-    <div><span class="n">9</span>Updates und häufige Fragen<span class="s">10</span></div>
-    <div><span class="n">5</span>Packungen scannen<span class="s">6</span></div>
-    <div><span class="n">✓</span>Kurzübersicht für den Stand<span class="s">11</span></div>
+    <div><span class="n">8</span>Einstellungen, Sicherung und Abgleich<span class="s">10</span></div>
+    <div><span class="n">4</span>Mindestbestand<span class="s">6</span></div>
+    <div><span class="n">9</span>Updates und häufige Fragen<span class="s">11</span></div>
+    <div><span class="n">5</span>Packungen scannen<span class="s">7</span></div>
+    <div><span class="n">✓</span>Kurzübersicht für den Stand<span class="s">12</span></div>
   </div>
   <div class="foot"><b>AMMO TRACKER</b><span>2</span></div>
 </section>
@@ -287,12 +287,12 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
       <p class="lead">Oben steht die Patronenparade: jedes Kaliber im echten Größenverhältnis mit seiner Gesamtzahl. Ein Tipp auf eine Patrone springt zum Kaliber in der Liste darunter.</p>
       <p>In der Liste siehst du jede Sorte mit Bestand und Preis pro Schuss. Die Kaliber stehen nach Bestand sortiert, das größte zuerst.</p>
       <h3>Neue Sorte anlegen</h3>
-      <p>Das <span class="k">Plus</span> oben rechts. Kaliber, Hersteller und Bezeichnung wählen oder eintippen, Vorschläge erscheinen unter dem Feld. Geschossgewicht, Geschossform und Hülsenfarbe sind optional, die beiden letzten bestimmen nur das Bild.</p>
+      <p>Das <span class="k">Plus</span> oben rechts. Kaliber, Hersteller und Bezeichnung wählen oder eintippen, Vorschläge erscheinen unter dem Feld. Art, Geschossgewicht, Geschossform und Hülsenfarbe sind optional, die beiden letzten bestimmen nur das Bild.</p>
       <h3>Preis pro Schuss</h3>
       <p>Die App rechnet den Durchschnitt aller Einkäufe mit Preis. Ohne Preis steht dort nichts, die Sorte funktioniert trotzdem.</p>
       <div class="box"><span class="t">Erinnerung</span>Ist die letzte Sicherung älter als 30 Tage, erscheint oben im Bestand ein Hinweis.</div>
     </div>
-    <div><div class="phone" style="aspect-ratio:780/1850"><img src="img/bestand.png" alt="Bestand mit Patronenparade"></div><div class="cap">Bestand mit drei Kalibern</div></div>
+    <div><div class="phone" style="aspect-ratio:780/1850"><img src="img/bestand.png" alt="Bestand mit Patronenparade"></div><div class="cap">Bestand mit vier Kalibern</div></div>
   </div>
   <div class="split" style="grid-template-columns:1fr 50mm">
     <div>
@@ -307,6 +307,27 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
     <div><div class="phone bottom" style="aspect-ratio:780/1214"><img src="img/sorte.png" alt="Übersicht einer Sorte"></div><div class="cap">Übersicht einer Sorte</div></div>
   </div>
   <div class="foot"><b>AMMO TRACKER</b><span>4</span></div>
+</section>
+
+<!-- 4b Hauptkaliber und Unterarten -->
+<section class="page">
+  <div class="split">
+    <div>
+      <h3>Hauptkaliber und Unterarten</h3>
+      <p class="lead">Manche Kaliber gehören zusammen. Eine Flinte in 12/76 verschießt auch 12/70, ein Revolver in .357 Magnum auch .38 Special. Die App fasst sie deshalb zu einem Hauptkaliber zusammen: „Kaliber 12“ und „.357 Mag / .38 Spl“.</p>
+      <p>Oben steht die Gesamtzahl. Darunter folgt für jede Unterart eine Zwischenzeile mit kleiner Patrone und eigener Summe, z. B. 12/70, 12/76 und 12/70 Buckshot. Unter jeder Zwischenzeile stehen wie gewohnt die einzelnen Sorten.</p>
+      <h3>Das Feld Art</h3>
+      <p>Beim Anlegen oder Bearbeiten einer Sorte gibt es das Feld <span class="k">Art</span>, z. B. Standard, High Velocity, Subsonic, Buckshot oder Flintenlaufgeschoss. Sorten mit gleicher Art werden zusammengezählt. So siehst du bei .22 lfB auf einen Blick, wie viel Standard und wie viel High Velocity da ist.</p>
+      <p>Zwischenzeilen erscheinen nur, wenn es mehr als eine Unterart gibt. Ein Kaliber, bei dem du keine Art einträgst, sieht aus wie bisher.</p>
+      <div class="box"><span class="t">Buckshot erkennen</span>Von außen sieht Buckshot aus wie jede andere Schrotpatrone. Wähle bei der Sorte unter <span class="k">Hülse für das Bild</span> eine eigene Farbe, z. B. Schwarz. Dann steht in der Zwischenzeile eine schwarze Patrone.</div>
+      <h3>Mindestbestand bei Hauptkalibern</h3>
+      <p>Ein Tipp auf „Kaliber 12“ zeigt ein Feld pro Kaliber, also eins für 12/70 und eins für 12/76. Die Warnung erscheint, sobald eins davon darunter fällt.</p>
+      <h3>Im Training</h3>
+      <p>An einer Waffe in 12/76 kannst du auch 12/70 wählen, an einer .357 Magnum auch .38 Special. Umgekehrt lehnt die App das ab, denn 12/76 passt nicht in eine 12/70-Flinte.</p>
+    </div>
+    <div><div class="phone"><img src="img/kaliber12.png" alt="Kaliber 12 mit Unterarten 12/70, 12/76 und Buckshot"></div><div class="cap">Kaliber 12 mit drei Unterarten</div></div>
+  </div>
+  <div class="foot"><b>AMMO TRACKER</b><span>5</span></div>
 </section>
 
 <!-- 5 Mindestbestand -->
@@ -332,7 +353,7 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
     <div class="phone" style="aspect-ratio:780/420; width:88mm; border-radius:4mm"><img src="img/bestand.png" alt="Rote Zeile für .308 Win im Bestand" style="object-position:0 83.75%"></div>
     <div class="cap" style="text-align:left">So sieht die Warnung im Bestand aus: 250 von mindestens 500, über beide Sorten gerechnet.</div>
   </div>
-  <div class="foot"><b>AMMO TRACKER</b><span>5</span></div>
+  <div class="foot"><b>AMMO TRACKER</b><span>6</span></div>
 </section>
 
 <!-- 6 Scannen -->
@@ -367,7 +388,7 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
       <div class="box"><span class="t">Kamera-Erlaubnis</span>iOS fragt bei Web-Apps immer wieder nach der Kamera, innerhalb eines Scan-Durchgangs aber nur einmal. Eventuell hilft Einstellungen → Apps → Safari → Kamera → Erlauben. Die Bilder werden nur auf dem Handy ausgewertet und nirgends gespeichert.</div>
     </div>
   </div>
-  <div class="foot"><b>AMMO TRACKER</b><span>6</span></div>
+  <div class="foot"><b>AMMO TRACKER</b><span>7</span></div>
 </section>
 
 <!-- Training -->
@@ -389,6 +410,7 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
         <li><span class="k">App zwischendurch geschlossen:</span> Das Training bleibt erhalten. Beim nächsten Öffnen landest du direkt wieder darin.</li>
         <li><span class="k">Training verwerfen:</span> nichts wird gespeichert oder abgezogen.</li>
         <li><span class="k">Schnell hintereinander getippt:</span> Jeder Tipp zählt.</li>
+        <li><span class="k">Passende Munition:</span> An einer 12/76-Flinte lässt sich auch 12/70 wählen, an einer .357 Magnum auch .38 Special.</li>
       </ul>
     </div>
     <div>
@@ -396,7 +418,7 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
       <div class="phone bottom" style="margin-top:5mm; aspect-ratio:780/800"><img src="img/training-ende.png" alt="Training beenden"></div><div class="cap">Beenden zieht vom Bestand ab</div>
     </div>
   </div>
-  <div class="foot"><b>AMMO TRACKER</b><span>7</span></div>
+  <div class="foot"><b>AMMO TRACKER</b><span>8</span></div>
 </section>
 
 <!-- Waffen, Verlauf -->
@@ -429,7 +451,7 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
     </div>
     <div><div class="phone" style="aspect-ratio:780/1240"><img src="img/verlauf.png" alt="Verlauf"></div><div class="cap">Statistik und Chronik</div></div>
   </div>
-  <div class="foot"><b>AMMO TRACKER</b><span>8</span></div>
+  <div class="foot"><b>AMMO TRACKER</b><span>9</span></div>
 </section>
 
 <!-- Einstellungen, Sicherung -->
@@ -466,7 +488,7 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
     </div>
     <div><div class="phone" style="aspect-ratio:780/840"><img src="img/sicherung.png" alt="Sicherung und Abgleich"></div><div class="cap">Sicherung und Abgleich</div></div>
   </div>
-  <div class="foot"><b>AMMO TRACKER</b><span>9</span></div>
+  <div class="foot"><b>AMMO TRACKER</b><span>10</span></div>
 </section>
 
 <!-- Updates, FAQ -->
@@ -492,7 +514,7 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
     <div><div class="q">Ein Freund möchte die App auch.</div><p>Einfach die Adresse schicken. Er bekommt eine leere App mit eigenen Daten und sieht nichts von deinen.</p></div>
     <div><div class="q">Kann jemand meine Daten sehen?</div><p>Nein. Sie liegen nur auf deinem Gerät, die App darf keine Verbindung nach außen aufbauen. Weitergegeben wird nur, was du selbst verschickst.</p></div>
   </div>
-  <div class="foot"><b>AMMO TRACKER</b><span>10</span></div>
+  <div class="foot"><b>AMMO TRACKER</b><span>11</span></div>
 </section>
 
 <!-- Kurzübersicht -->
@@ -541,7 +563,7 @@ td:first-child { white-space: nowrap; font-weight: 600; color: #fff; width: 1%; 
     <tr><td></td><td></td><td></td><td></td></tr>
   </table>
   <div class="cut">dwal1n.github.io/ammo-tracker · immer über das Symbol „Munition“ öffnen, nie über Safari</div>
-  <div class="foot"><b>AMMO TRACKER</b><span>11</span></div>
+  <div class="foot"><b>AMMO TRACKER</b><span>12</span></div>
 </section>
 
 </main>
